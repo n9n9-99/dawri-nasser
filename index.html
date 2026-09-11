@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>دوري | لا خلا ولا عدم</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--bg:#07110d;--panel:#0e1b15;--panel2:#14251c;--line:#294033;--text:#f6fbf7;--muted:#9fb2a5;--gold:#d7b868;--green:#1e8c58;--red:#d85b5b;--blue:#3c82f6;--radius:22px}
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;background:radial-gradient(circle at top,#173024 0,#07110d 38%,#050906 100%);color:var(--text);min-height:100vh}button,input,select{font:inherit}.hidden{display:none!important}
+.app{max-width:520px;margin:auto;min-height:100vh;padding-bottom:94px}.top{padding:20px 18px 12px;position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(7,17,13,.96),rgba(7,17,13,.78),transparent);backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:56px;height:56px;border-radius:18px;background:linear-gradient(145deg,#f0d98d,#9d7a2d);display:grid;place-items:center;color:#122017;font-size:28px;font-weight:900;box-shadow:0 10px 30px #0006}.brand h1{margin:0;font-size:21px}.brand p{margin:3px 0 0;color:var(--muted);font-size:13px}.live{margin-right:auto;font-size:11px;padding:6px 9px;border-radius:999px;background:#163d2a;color:#bdf6d4;border:1px solid #2f7754}
+.section{padding:8px 16px}.hero{background:linear-gradient(145deg,#173426,#0f2018);border:1px solid #284535;border-radius:28px;padding:18px;box-shadow:0 16px 38px #0005}.hero-top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.hero .round{font-size:27px;font-weight:900}.hero .sub{font-size:13px;color:var(--muted);margin-top:5px}.lock{padding:8px 10px;border-radius:14px;background:#15221b;border:1px solid #31483b;color:#dfe9e2;font-size:12px}.count{margin-top:16px;display:flex;gap:8px}.pill{flex:1;padding:10px 8px;border-radius:15px;background:#0d1712;border:1px solid #263a2f;text-align:center}.pill b{display:block;font-size:18px}.pill span{font-size:11px;color:var(--muted)}
+.title{display:flex;align-items:center;justify-content:space-between;margin:14px 1px 10px}.title h2{font-size:16px;margin:0}.title small{color:var(--muted)}.card{background:linear-gradient(180deg,#101d16,#0b1510);border:1px solid #25382d;border-radius:22px;padding:14px;margin-bottom:10px}.match{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}.team{text-align:center}.badge{width:56px;height:56px;border-radius:18px;margin:auto auto 7px;display:grid;place-items:center;font-weight:900;font-size:15px;background:linear-gradient(145deg,#f1f4f1,#acb3ad);color:#132019;border:3px solid #ffffff18}.badge.nassr{width:72px;height:72px;border-color:#f4d66f;background:linear-gradient(145deg,#ffdc54,#1b4e9a);color:white;box-shadow:0 0 0 4px #d9b73d33,0 12px 24px #0006}.team b{font-size:13px}.vs{text-align:center}.vs b{font-size:18px}.vs span{display:block;color:var(--muted);font-size:11px;margin-top:4px}.bonus{margin-top:12px;padding:10px 12px;border-radius:15px;background:linear-gradient(90deg,#3f3112,#1c180d);border:1px solid #7a6121;color:#f9e7a9;font-size:12px}.choices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}.choice{padding:10px 7px;border-radius:13px;background:#132119;border:1px solid #304739;color:#eef6f0;cursor:pointer}.choice.active{border-color:var(--gold);background:#3a3217;color:#ffeaa3}.score-row{display:flex;gap:8px;margin-top:9px}.score-row input{width:58px;text-align:center;background:#09100c;border:1px solid #31483a;border-radius:12px;color:white;padding:9px}.score-row label{margin:auto;color:var(--muted);font-size:12px}.table{overflow:hidden;border-radius:22px;border:1px solid #25382d;background:#0d1712}.tr{display:grid;grid-template-columns:44px 1fr 76px 76px;gap:6px;align-items:center;padding:12px 10px;border-bottom:1px solid #1d2d24}.tr:last-child{border-bottom:0}.tr.head{color:var(--muted);font-size:11px;background:#111e17}.pos{font-weight:900}.pts{text-align:center;font-weight:800}.delta{font-size:11px;text-align:center;color:#8ce0b0}
+.nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(520px,100%);padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#08110ddb;border-top:1px solid #21342a;backdrop-filter:blur(20px);display:grid;grid-template-columns:repeat(4,1fr);z-index:30}.nav button{border:0;background:transparent;color:#82958a;padding:7px 3px;font-size:11px}.nav button b{display:block;font-size:19px;margin-bottom:3px}.nav button.active{color:#f2d67d}.screen{display:none}.screen.active{display:block}
+.login{min-height:100vh;display:flex;align-items:center;padding:76px 18px 26px}.loginbox{width:100%;background:#0d1712;border:1px solid #2a3f33;border-radius:30px;padding:22px;box-shadow:0 25px 60px #0008}.loginbox .biglogo{width:96px;height:96px;margin:-72px auto 18px;border-radius:30px;background:linear-gradient(145deg,#f0d98d,#9d7a2d);display:grid;place-items:center;color:#122017;font-size:42px;font-weight:900;box-shadow:0 15px 38px #0007}.loginbox h2{text-align:center;margin:0}.loginbox p{text-align:center;color:var(--muted);font-size:13px}.field{margin-top:12px}.field label{display:block;font-size:12px;color:#b8c8be;margin-bottom:6px}.field input{width:100%;padding:13px;border-radius:14px;border:1px solid #2d4436;background:#09100c;color:#fff}.primary{width:100%;margin-top:14px;padding:13px;border:0;border-radius:15px;background:linear-gradient(145deg,#ecd47f,#b58b2e);color:#122017;font-weight:900}.ghost{width:100%;margin-top:8px;padding:12px;border-radius:15px;border:1px solid #2d4436;background:#101c15;color:#edf5ef}.danger{width:100%;margin-top:8px;padding:12px;border-radius:15px;border:1px solid #703636;background:#321717;color:#ffd7d7}.hint{font-size:11px;color:#819287;text-align:center;margin-top:12px;line-height:1.7}.admin-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.admin-card{padding:16px;border-radius:20px;background:#101d16;border:1px solid #294032}.admin-card strong{font-size:25px;display:block}.admin-card span{font-size:12px;color:var(--muted)}.request{display:flex;align-items:center;gap:10px}.avatar{width:42px;height:42px;border-radius:50%;background:#21392b;display:grid;place-items:center;font-weight:900}.request .info{flex:1}.request .info b{display:block}.request .info span{font-size:11px;color:var(--muted)}.accept,.reject{border:0;padding:8px 10px;border-radius:10px;color:white}.accept{background:#1c8b56}.reject{background:#7d2929}.toast{position:fixed;top:86px;left:50%;transform:translateX(-50%) translateY(-20px);background:#16261d;border:1px solid #355342;padding:10px 14px;border-radius:14px;opacity:0;pointer-events:none;transition:.25s;z-index:99;font-size:12px;max-width:88%;text-align:center}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.statusbox{padding:18px;text-align:center}.statusbox .icon{font-size:44px}.statusbox h3{margin:8px 0}.statusbox p{color:var(--muted);font-size:13px;line-height:1.7}.empty{padding:28px;text-align:center;color:var(--muted)}.row{display:flex;align-items:center;gap:10px}.row-between{display:flex;justify-content:space-between;align-items:center;gap:10px}.mini{font-size:11px;color:var(--muted)}.good{color:#9be7ba}.bad{color:#ff9f9f}
+</style>
+</head>
+<body>
+<div id="toast" class="toast">تم</div>
+
+<div id="authScreen" class="login">
+  <div class="loginbox">
+    <div class="biglogo">⚽</div>
+    <h2>دوري | لا خلا ولا عدم</h2>
+    <p>لعبة توقعات دوري روشن السعودي 2026/2027</p>
+
+    <div id="loginPanel">
+      <div class="field"><label>اسم المستخدم أو البريد الإلكتروني</label><input id="loginId" autocomplete="username" placeholder="مثال: ناصر" /></div>
+      <div class="field"><label>كلمة المرور</label><input id="loginPassword" type="password" autocomplete="current-password" /></div>
+      <button class="primary" onclick="login()">دخول</button>
+      <button class="ghost" onclick="toggleAuthMode('register')">إنشاء حساب جديد</button>
+      <div class="hint">الحسابات الجديدة تنتظر موافقة الأدمن قبل المشاركة.</div>
+    </div>
+
+    <div id="registerPanel" class="hidden">
+      <div class="field"><label>اسم المستخدم</label><input id="registerUsername" autocomplete="username" placeholder="اكتب اسمك" /></div>
+      <div class="field"><label>كلمة المرور</label><input id="registerPassword" type="password" autocomplete="new-password" placeholder="6 أحرف على الأقل" /></div>
+      <button class="primary" onclick="registerUser()">إرسال طلب الانضمام</button>
+      <button class="ghost" onclick="toggleAuthMode('login')">لدي حساب بالفعل</button>
+      <div class="hint">سيظهر طلبك مباشرة في لوحة الأدمن للموافقة أو الرفض.</div>
+    </div>
+  </div>
+</div>
+
+<div id="pendingScreen" class="login hidden">
+  <div class="loginbox statusbox">
+    <div class="biglogo">⏳</div>
+    <div class="icon">🕒</div>
+    <h3>حسابك بانتظار الموافقة</h3>
+    <p>تم تسجيل الحساب بنجاح. بعد موافقة الأدمن ستتمكن من دخول الجولة وتسجيل توقعاتك.</p>
+    <button class="ghost" onclick="refreshMyProfile()">تحديث الحالة</button>
+    <button class="danger" onclick="logout()">تسجيل الخروج</button>
+  </div>
+</div>
+
+<div id="rejectedScreen" class="login hidden">
+  <div class="loginbox statusbox">
+    <div class="biglogo">⚽</div>
+    <div class="icon">⛔</div>
+    <h3>الحساب غير متاح</h3>
+    <p id="rejectedText">تم رفض الحساب أو إيقافه. تواصل مع الأدمن إذا كنت تعتقد أن هذا خطأ.</p>
+    <button class="danger" onclick="logout()">تسجيل الخروج</button>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <div class="top">
+    <div class="brand"><div class="logo">⚽</div><div><h1>لا خلا ولا عدم</h1><p id="welcome">مرحبًا</p></div><span id="connectionBadge" class="live">متصل</span></div>
+  </div>
+  <main>
+    <section id="home" class="screen active">
+      <div class="section"><div class="hero"><div class="hero-top"><div><div id="roundTitle" class="round">الجولة</div><div class="sub">دوري روشن السعودي 2026/2027</div></div><div id="lockText" class="lock">🔒 الإغلاق قبل أول مباراة بساعة</div></div><div class="count"><div class="pill"><b id="fixtureCount">0</b><span>مباريات</span></div><div class="pill"><b id="bonusCount">0</b><span>بونص</span></div><div class="pill"><b id="playerCount">0</b><span>لاعبين</span></div></div></div></div>
+      <div class="section"><div class="title"><h2>مباريات الجولة</h2><small id="predictionState">—</small></div><div id="fixturesList" class="empty">جارٍ تحميل المباريات...</div></div>
+    </section>
+
+    <section id="ranking" class="screen"><div class="section"><div class="title"><h2>الترتيب العام</h2><small>الرصيد المرحّل حتى نهاية الجولة 6</small></div><div id="rankingTable" class="table"><div class="empty">جارٍ تحميل الترتيب...</div></div></div></section>
+
+    <section id="community" class="screen"><div class="section"><div class="title"><h2>توقعات اللاعبين</h2><small id="communityHint">تظهر بعد إغلاق الجولة</small></div><div id="communityContent" class="card statusbox"><div class="icon">🔐</div><h3>التوقعات مخفية حاليًا</h3><p>سيتم كشف التوقعات بعد إغلاق استقبال التوقعات للجولة.</p></div></div></section>
+
+    <section id="admin" class="screen"><div class="section"><div class="title"><h2>لوحة الأدمن</h2><small>إدارة حقيقية</small></div><div class="admin-grid"><div class="admin-card"><strong id="approvedCount">0</strong><span>مستخدمين معتمدين</span></div><div class="admin-card"><strong id="pendingCount">0</strong><span>طلبات انضمام</span></div><div class="admin-card"><strong id="adminRound">—</strong><span>الجولة الحالية</span></div><div class="admin-card"><strong id="adminBonus">0</strong><span>مباريات بونص</span></div></div>
+      <div class="title"><h2>طلبات الانضمام</h2></div><div id="requestsList"><div class="card empty">لا توجد طلبات حاليًا</div></div>
+      <div class="title"><h2>إدارة الجولة</h2></div><div class="card"><button class="ghost" onclick="setRoundReveal(true)">👥 كشف توقعات الجولة</button><button class="ghost" onclick="setRoundReveal(false)">🔐 إخفاء توقعات الجولة</button><button class="ghost" onclick="calculateRoundScores()">🧮 إعادة احتساب النقاط</button><button class="danger" onclick="logout()">تسجيل الخروج</button></div>
+    </div></section>
+  </main>
+  <nav class="nav"><button class="active" onclick="showScreen('home',this)"><b>⚽</b>الجولة</button><button onclick="showScreen('ranking',this)"><b>🏆</b>الترتيب</button><button onclick="showScreen('community',this)"><b>👥</b>التوقعات</button><button id="adminTab" class="hidden" onclick="showScreen('admin',this)"><b>⚙️</b>الإدارة</button></nav>
+</div>
+
+<script>
+const SUPABASE_URL='https://onaxpqnmmjnzfgzvfnzl.supabase.co';
+const SUPABASE_KEY='sb_publishable_NUhuVI8sbqDtRcUdXlZ3Pw_fcL5FcKu';
+const { createClient } = supabase;
+const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+let session=null, me=null, currentRound=null, fixtures=[], teamsMap={}, myPredictions=new Map();
+
+function el(id){return document.getElementById(id)}
+function esc(s=''){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function notify(msg){const t=el('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
+function toggleAuthMode(mode){el('loginPanel').classList.toggle('hidden',mode!=='login');el('registerPanel').classList.toggle('hidden',mode!=='register')}
+function showOnly(id){['authScreen','pendingScreen','rejectedScreen','app'].forEach(x=>el(x).classList.add('hidden'));el(id).classList.remove('hidden')}
+function showScreen(id,btn){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));el(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');if(id==='ranking')loadRanking();if(id==='community')loadCommunity();if(id==='admin'&&me?.role==='admin')loadAdmin()}
+async function hashUsername(username){const data=new TextEncoder().encode(username.trim().toLowerCase());const hash=await crypto.subtle.digest('SHA-256',data);return Array.from(new Uint8Array(hash)).slice(0,12).map(b=>b.toString(16).padStart(2,'0')).join('')}
+async function usernameEmail(username){return `u_${await hashUsername(username)}@dawri.local`}
+
+async function login(){
+  const id=el('loginId').value.trim(), password=el('loginPassword').value;
+  if(!id||!password)return notify('أدخل اسم المستخدم وكلمة المرور');
+  try{
+    const email=id.includes('@')?id:await usernameEmail(id);
+    let {data,error}=await db.auth.signInWithPassword({email,password});
+    if(error && !id.includes('@')){
+      notify('إذا كان هذا حساب الأدمن القديم، استخدم البريد الإلكتروني في خانة اسم المستخدم');
+      return;
+    }
+    if(error) throw error;
+    await boot(data.session);
+  }catch(e){notify('تعذر تسجيل الدخول: '+(e.message||'تحقق من البيانات'))}
+}
+
+async function registerUser(){
+  const username=el('registerUsername').value.trim(), password=el('registerPassword').value;
+  if(username.length<2)return notify('اكتب اسم مستخدم صحيح');
+  if(password.length<6)return notify('كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+  try{
+    const email=await usernameEmail(username);
+    const {data,error}=await db.auth.signUp({email,password,options:{data:{username,display_name:username}}});
+    if(error) throw error;
+    notify('تم إرسال طلب الانضمام');
+    if(data.session) await boot(data.session); else { toggleAuthMode('login'); el('loginId').value=username; notify('تم إنشاء الطلب. إذا تعذر الدخول لاحقًا، يلزم تعطيل تأكيد البريد من إعدادات Supabase Auth.'); }
+  }catch(e){notify('تعذر إنشاء الحساب: '+(e.message||'خطأ غير معروف'))}
+}
+
+async function logout(){await db.auth.signOut();session=null;me=null;showOnly('authScreen');toggleAuthMode('login')}
+
+async function getMyProfile(){
+  if(!session?.user?.id)return null;
+  const {data,error}=await db.from('profiles').select('*').eq('id',session.user.id).single();
+  if(error) throw error;return data;
+}
+
+async function refreshMyProfile(){try{me=await getMyProfile();routeByProfile()}catch(e){notify('تعذر تحديث الحالة')}}
+function routeByProfile(){
+  if(!me)return showOnly('authScreen');
+  if(me.approval_status==='pending')return showOnly('pendingScreen');
+  if(me.approval_status==='rejected'||me.approval_status==='suspended'){el('rejectedText').textContent=me.approval_status==='rejected'?'تم رفض الحساب. تواصل مع الأدمن عند الحاجة.':'تم إيقاف الحساب مؤقتًا.';return showOnly('rejectedScreen')}
+  if(me.approval_status!=='approved')return showOnly('pendingScreen');
+  showOnly('app');el('welcome').textContent='مرحبًا '+(me.display_name||me.username)+(me.role==='admin'?' — أدمن':'');el('adminTab').classList.toggle('hidden',me.role!=='admin');loadApp();
+}
+
+async function boot(s){session=s||null;if(!session){showOnly('authScreen');return}try{me=await getMyProfile();routeByProfile()}catch(e){console.error(e);notify('تعذر تحميل الملف الشخصي');showOnly('authScreen')}}
+
+async function loadApp(){await Promise.all([loadTeams(),loadCurrentRound(),loadRanking()]);if(me.role==='admin')loadAdmin()}
+async function loadTeams(){const {data}=await db.from('teams').select('*');teamsMap={};(data||[]).forEach(t=>teamsMap[t.id]=t)}
+async function loadCurrentRound(){
+  const {data,error}=await db.from('rounds').select('*').order('round_number',{ascending:false}).limit(1).maybeSingle();
+  if(error){console.error(error);return}
+  currentRound=data;
+  if(!data){el('roundTitle').textContent='لا توجد جولة';el('fixturesList').innerHTML='<div class="card empty">لم يتم إنشاء جولة بعد.</div>';return}
+  el('roundTitle').textContent='الجولة '+data.round_number;el('adminRound').textContent=data.round_number;
+  const close=data.predictions_close_at?new Date(data.predictions_close_at):null;
+  const locked=close?Date.now()>=close.getTime():true;
+  el('lockText').textContent=close?'🔒 الإغلاق '+close.toLocaleString('ar-SA',{dateStyle:'short',timeStyle:'short'}):'🔒 لم يتم تحديد وقت الإغلاق';
+  el('predictionState').textContent=locked?'مغلقة':'قابلة للتعديل';
+  const {data:fx,error:fxe}=await db.from('fixtures').select('*').eq('round_id',data.id).order('kickoff_at');
+  if(fxe)console.error(fxe);fixtures=fx||[];el('fixtureCount').textContent=fixtures.length;el('bonusCount').textContent=fixtures.filter(f=>f.is_bonus).length;el('adminBonus').textContent=fixtures.filter(f=>f.is_bonus).length;
+  const {data:pred}=await db.from('predictions').select('*').eq('user_id',me.id);myPredictions=new Map((pred||[]).map(p=>[p.fixture_id,p]));renderFixtures(locked);
+}
+function teamName(id){return teamsMap[id]?.name_ar||'فريق'}
+function shortName(id){return teamsMap[id]?.short_name||teamName(id).slice(0,3)}
+function isNassr(id){return /النصر/i.test(teamName(id))}
+function fmtKickoff(v){try{return new Date(v).toLocaleString('ar-SA',{weekday:'short',hour:'numeric',minute:'2-digit'})}catch{return ''}}
+function renderFixtures(locked){
+  const c=el('fixturesList');if(!fixtures.length){c.innerHTML='<div class="card empty">لم تتم إضافة مباريات الجولة إلى قاعدة البيانات بعد.</div>';return}
+  c.className='';c.innerHTML=fixtures.map(f=>{
+    const p=myPredictions.get(f.id);const bonus=f.is_bonus?`<div class="bonus">⭐ مباراة بونص — فوز الفريق المرجعي +1 | تعادل +2 | فوز الخصم +4</div>`:'';
+    const disabled=locked?'disabled':'';
+    return `<div class="card" data-fixture="${f.id}"><div class="match"><div class="team"><div class="badge ${isNassr(f.home_team_id)?'nassr':''}">${esc(shortName(f.home_team_id))}</div><b>${esc(teamName(f.home_team_id))}</b></div><div class="vs"><b>VS</b><span>${esc(fmtKickoff(f.kickoff_at))}</span></div><div class="team"><div class="badge ${isNassr(f.away_team_id)?'nassr':''}">${esc(shortName(f.away_team_id))}</div><b>${esc(teamName(f.away_team_id))}</b></div></div>${bonus}<div class="choices"><button ${disabled} class="choice ${p?.outcome==='home'?'active':''}" onclick="pickOutcome('${f.id}','home',this)">${esc(teamName(f.home_team_id))}</button><button ${disabled} class="choice ${p?.outcome==='draw'?'active':''}" onclick="pickOutcome('${f.id}','draw',this)">تعادل</button><button ${disabled} class="choice ${p?.outcome==='away'?'active':''}" onclick="pickOutcome('${f.id}','away',this)">${esc(teamName(f.away_team_id))}</button></div><div class="score-row"><input ${disabled} id="hs_${f.id}" type="number" min="0" value="${p?.predicted_home_score??''}"><label>توقع النتيجة الدقيقة</label><input ${disabled} id="as_${f.id}" type="number" min="0" value="${p?.predicted_away_score??''}"></div></div>`
+  }).join('')+(!locked?'<button class="primary" onclick="savePredictions()">حفظ توقعات الجولة</button>':'');
+}
+function pickOutcome(fid,outcome,btn){if(!myPredictions.has(fid))myPredictions.set(fid,{fixture_id:fid,user_id:me.id});myPredictions.get(fid).outcome=outcome;btn.parentElement.querySelectorAll('.choice').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+async function savePredictions(){
+  if(!currentRound)return;const rows=[];
+  for(const f of fixtures){const p=myPredictions.get(f.id);if(!p?.outcome)continue;const h=el('hs_'+f.id).value,a=el('as_'+f.id).value;rows.push({fixture_id:f.id,user_id:me.id,outcome:p.outcome,predicted_home_score:h===''?null:Number(h),predicted_away_score:a===''?null:Number(a)})}
+  if(!rows.length)return notify('اختر توقعًا واحدًا على الأقل');
+  const {error}=await db.from('predictions').upsert(rows,{onConflict:'fixture_id,user_id'});if(error)return notify('تعذر الحفظ: '+error.message);notify('تم حفظ توقعاتك');await loadCurrentRound();
+}
+
+async function loadRanking(){
+  const {data:legacy,error}=await db.from('legacy_standings').select('*').order('points',{ascending:false});if(error){console.error(error);return}
+  const {count}=await db.from('profiles').select('*',{count:'exact',head:true}).eq('approval_status','approved');el('playerCount').textContent=count??0;
+  const rows=(legacy||[]).sort((a,b)=>b.points-a.points);el('rankingTable').innerHTML=`<div class="tr head"><span>#</span><span>اللاعب</span><span>النقاط</span><span>حتى</span></div>`+rows.map((r,i)=>`<div class="tr"><span class="pos">${i<3?['🥇','🥈','🥉'][i]:''}${i+1}</span><span>${esc(r.player_name)}</span><span class="pts">${r.points}</span><span class="delta">ج ${r.through_round}</span></div>`).join('');
+}
+
+async function loadCommunity(){
+  if(!currentRound)return;const revealed=!!currentRound.predictions_revealed;el('communityHint').textContent=revealed?'التوقعات مكشوفة':'تظهر بعد إغلاق الجولة';
+  if(!revealed){el('communityContent').innerHTML='<div class="icon">🔐</div><h3>التوقعات مخفية حاليًا</h3><p>سيتم كشف جميع توقعات اللاعبين عند فتحها من الأدمن بعد الإغلاق.</p>';return}
+  const {data:pred,error}=await db.from('predictions').select('*,profiles!predictions_user_id_fkey(display_name),fixtures!predictions_fixture_id_fkey(home_team_id,away_team_id,round_id)').eq('fixtures.round_id',currentRound.id);if(error){console.error(error);el('communityContent').innerHTML='<p>تعذر تحميل التوقعات.</p>';return}
+  const groups={};(pred||[]).forEach(p=>{const n=p.profiles?.display_name||'لاعب';(groups[n]??=[]).push(p)});const names=Object.keys(groups);if(!names.length){el('communityContent').innerHTML='<p>لا توجد توقعات محفوظة لهذه الجولة.</p>';return}
+  el('communityContent').innerHTML=names.map(n=>`<div class="card"><b>${esc(n)}</b><div class="mini" style="margin-top:8px">${groups[n].map(p=>{const f=fixtures.find(x=>x.id===p.fixture_id);return f?`${esc(teamName(f.home_team_id))} × ${esc(teamName(f.away_team_id))}: ${p.outcome==='home'?esc(teamName(f.home_team_id)):p.outcome==='away'?esc(teamName(f.away_team_id)):'تعادل'} ${p.predicted_home_score!=null&&p.predicted_away_score!=null?`(${p.predicted_home_score}-${p.predicted_away_score})`:''}`:''}).join('<br>')}</div></div>`).join('');
+}
+
+async function loadAdmin(){
+  if(me.role!=='admin')return;
+  const {data:profiles}=await db.from('profiles').select('*').order('created_at');const all=profiles||[];el('approvedCount').textContent=all.filter(p=>p.approval_status==='approved').length;const pending=all.filter(p=>p.approval_status==='pending');el('pendingCount').textContent=pending.length;
+  const box=el('requestsList');box.innerHTML=pending.length?pending.map(p=>`<div class="card request"><div class="avatar">${esc((p.display_name||p.username||'?').slice(0,1))}</div><div class="info"><b>${esc(p.display_name||p.username)}</b><span>طلب انضمام جديد</span></div><button class="accept" onclick="approveUser('${p.id}','${encodeURIComponent(p.display_name||p.username)}')">قبول</button><button class="reject" onclick="rejectUser('${p.id}')">رفض</button></div>`).join(''):'<div class="card empty">لا توجد طلبات حاليًا</div>';
+}
+async function approveUser(id,encodedName){
+  const name=decodeURIComponent(encodedName);let baseline=0;const {data:legacy}=await db.from('legacy_standings').select('points').ilike('player_name',name).maybeSingle();if(legacy)baseline=legacy.points;
+  const {error}=await db.from('profiles').update({approval_status:'approved',approved_at:new Date().toISOString(),approved_by:me.id,baseline_points:baseline}).eq('id',id);if(error)return notify('تعذر القبول: '+error.message);notify('تم قبول المستخدم');loadAdmin();
+}
+async function rejectUser(id){const {error}=await db.from('profiles').update({approval_status:'rejected',approved_at:new Date().toISOString(),approved_by:me.id}).eq('id',id);if(error)return notify('تعذر الرفض');notify('تم رفض المستخدم');loadAdmin()}
+async function setRoundReveal(v){if(!currentRound)return;const {error}=await db.from('rounds').update({predictions_revealed:v,status:v?'locked':currentRound.status}).eq('id',currentRound.id);if(error)return notify('تعذر تحديث الجولة: '+error.message);currentRound.predictions_revealed=v;notify(v?'تم كشف التوقعات':'تم إخفاء التوقعات')}
+async function calculateRoundScores(){
+  if(!currentRound)return;const finished=fixtures.filter(f=>f.status==='finished'&&f.home_score!=null&&f.away_score!=null);if(!finished.length)return notify('لا توجد مباريات منتهية لاحتسابها');
+  const ids=finished.map(f=>f.id);const {data:pred,error}=await db.from('predictions').select('*').in('fixture_id',ids);if(error)return notify('تعذر قراءة التوقعات');const rows=[];
+  for(const p of pred||[]){const f=finished.find(x=>x.id===p.fixture_id);const actual=f.home_score===f.away_score?'draw':f.home_score>f.away_score?'home':'away';const ok=p.outcome===actual;let bonus=0;if(ok&&f.is_bonus){if(actual==='draw')bonus=2;else{const winner=actual==='home'?f.home_team_id:f.away_team_id;bonus=winner===f.bonus_favored_team_id?1:4}}rows.push({prediction_id:p.id,outcome_points:ok?1:0,exact_score_points:(p.predicted_home_score===f.home_score&&p.predicted_away_score===f.away_score)?2:0,bonus_points:bonus,calculated_at:new Date().toISOString()})}
+  if(rows.length){const {error:e}=await db.from('prediction_scores').upsert(rows,{onConflict:'prediction_id'});if(e)return notify('تعذر حفظ النقاط: '+e.message)}notify('تم احتساب النقاط للمباريات المنتهية')
+}
+
+(async()=>{const {data}=await db.auth.getSession();if(data.session)await boot(data.session);else showOnly('authScreen');db.auth.onAuthStateChange((_event,s)=>{session=s;if(!s){me=null;showOnly('authScreen')}})})();
+</script>
+</body>
+</html>
