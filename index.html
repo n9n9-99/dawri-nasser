@@ -122,7 +122,7 @@ function renderSettings(){if(!isAdmin()||!settings)return;$('sendTime').value=St
 function renderAll(){renderMetrics();renderTransactions();renderArchive();renderPriority();renderUsers();renderSettings()}
 
 function openNewTx(){$('txForm').reset();$('txId').value='';$('txModalTitle').textContent='تسجيل معاملة جديدة';$('txDate').value=todayHijri();$('txStatus').value='قيد الإجراء';setBaseDisabled(false);toggleWait();openModal('txModal')}
-function setBaseDisabled(dis){['txNumber','txDate','txSubject','txEntity','txType'].forEach(id=>$(id).disabled=dis)}
+function setBaseDisabled(dis){['txDate','txSubject','txEntity','txType'].forEach(id=>$(id).disabled=dis);$('txNumber').disabled=false}
 function editTx(id){const x=transactions.find(t=>t.id===id);if(!x)return;$('txForm').reset();$('txId').value=x.id;$('txModalTitle').textContent='تعديل المعاملة';$('txNumber').value=x.transaction_no;$('txDate').value=gregorianToHijri(x.entry_date);$('txSubject').value=x.subject;$('txEntity').value=x.entity;$('txType').value=x.transaction_type;$('txStatus').value=x.status;$('txAction').value=x.required_action;$('txSentDate').value=x.sent_date?gregorianToHijri(x.sent_date):'';$('txLetterNo').value=x.outgoing_letter_no||'';$('txSentTo').value=x.sent_to||'';$('txNotes').value=x.notes||'';setBaseDisabled(!isAdmin());toggleWait();openModal('txModal')}
 function toggleWait(){const show=WAIT_STATUSES.includes($('txStatus').value);$('waitFields').classList.toggle('hidden',!show);$('txSentDate').required=show;$('txSentTo').required=show}
 
@@ -143,7 +143,7 @@ async function saveTx(ev){
  }else if(isAdmin()){
    ({error}=await sb.from('transactions').update({...common,transaction_no:txNo,entry_date:entryG,subject:$('txSubject').value.trim(),entity:$('txEntity').value.trim(),transaction_type:$('txType').value,updated_by:currentUser.id}).eq('id',id));
  }else{
-   ({error}=await sb.rpc('update_transaction_work',{p_id:id,p_status:status,p_required_action:common.required_action,p_notes:common.notes,p_sent_date:common.sent_date,p_outgoing_letter_no:common.outgoing_letter_no,p_sent_to:common.sent_to}));
+   ({error}=await sb.rpc('update_transaction_work',{p_id:id,p_status:status,p_required_action:common.required_action,p_notes:common.notes,p_sent_date:common.sent_date,p_outgoing_letter_no:common.outgoing_letter_no,p_sent_to:common.sent_to,p_transaction_no:txNo}));
  }
  if(error){console.error(error);toast('تعذر حفظ المعاملة: '+error.message);return}
  closeModal('txModal');toast(id?'تم تحديث المعاملة':'تم تسجيل المعاملة');await loadAll();
