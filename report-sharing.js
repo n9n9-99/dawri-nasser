@@ -17,7 +17,7 @@
         return 'shared';
       } catch (error) {
         if (error?.name === 'AbortError') return 'cancelled';
-        throw error;
+        if (error?.name !== 'NotAllowedError') throw error;
       }
     }
 

@@ -58,6 +58,23 @@ test('treats closing the native share sheet as cancellation', async () => {
   assert.equal(result, 'cancelled');
 });
 
+test('downloads when the browser rejects file sharing after report creation', async () => {
+  const rejected = new Error('user activation expired');
+  rejected.name = 'NotAllowedError';
+  const clicks = [];
+  const result = await sharing.shareOrDownload({
+    file: { name: 'report.pdf' },
+    navigatorRef: { canShare: () => true, share: async () => { throw rejected; } },
+    documentRef: {
+      createElement: () => ({ click: () => clicks.push(true), remove() {} }),
+      body: { appendChild() {} }
+    },
+    urlRef: { createObjectURL: () => 'blob:test', revokeObjectURL() {} }
+  });
+  assert.equal(result, 'downloaded');
+  assert.equal(clicks.length, 1);
+});
+
 test('index exposes the admin report sharing controls', async () => {
   const html = await readFile(path.join(__dirname, '..', 'index.html'), 'utf8');
   assert.match(html, /id="shareReportBtn"[^>]*data-admin-only/);
