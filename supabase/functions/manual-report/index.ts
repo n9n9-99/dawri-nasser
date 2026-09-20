@@ -28,15 +28,6 @@ function jsonResponse(status: number, body: unknown): Response {
   });
 }
 
-function riyadhDate(date: Date): string {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Asia/Riyadh",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(date);
-}
-
 function bearerToken(req: Request): string | null {
   const value = req.headers.get("authorization") ?? "";
   const match = value.match(/^Bearer\s+(.+)$/i);
@@ -66,14 +57,14 @@ export async function handleRequest(req: Request, deps: ManualReportDeps): Promi
       });
     }
 
-    const reportDate = riyadhDate(deps.now());
-    const pdfBytes = await deps.renderPdf(buildReportModel(rows, reportDate));
+    const model = buildReportModel(rows, deps.now());
+    const pdfBytes = await deps.renderPdf(model);
     return new Response(pdfBytes as BodyInit, {
       status: 200,
       headers: {
         ...CORS_HEADERS,
         "content-type": "application/pdf",
-        "content-disposition": `attachment; filename="legal-open-transactions-${reportDate}.pdf"`,
+        "content-disposition": `attachment; filename="legal-open-transactions-${model.generatedAt.gregorianDate}.pdf"`,
         "cache-control": "no-store",
       },
     });
@@ -118,7 +109,7 @@ function createProductionDeps(): ManualReportDeps {
     async listOpenTransactions() {
       const { data, error } = await client
         .from("transactions")
-        .select("transaction_no,subject,entity,status,required_action,entry_date,notes")
+        .select("transaction_no,subject,entity,transaction_type,status,required_action,entry_date,sent_date,outgoing_letter_no,sent_to,notes")
         .neq("status", "منتهية");
       assertNoError(error);
       return (data ?? []) as TransactionRow[];

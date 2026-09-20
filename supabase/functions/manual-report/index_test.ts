@@ -6,28 +6,63 @@ import { renderArabicPdf } from "./pdf.ts";
 import { handleRequest, type ManualReportDeps } from "./index.ts";
 
 const rows = [
-  { transaction_no: "3", subject: "ج", entity: "ج", status: "قيد الإجراء", required_action: "متابعة" },
+  {
+    transaction_no: "3",
+    subject: "ج",
+    entity: "ج",
+    transaction_type: "واردة",
+    status: "قيد الإجراء",
+    required_action: "متابعة",
+    entry_date: "2026-09-20",
+  },
   { transaction_no: "2", subject: "ب", entity: "ب", status: "منتهية", required_action: "—" },
-  { transaction_no: "1", subject: "أ", entity: "أ", status: "متأخرة", required_action: "عاجل" },
+  {
+    transaction_no: "1",
+    subject: "أ",
+    entity: "أ",
+    transaction_type: "صادرة",
+    status: "متأخرة",
+    required_action: "عاجل",
+    entry_date: "2026-09-18",
+    sent_date: "2026-09-17",
+    outgoing_letter_no: "77",
+    sent_to: "الجهة المختصة",
+    notes: "متابعة عاجلة",
+  },
 ];
 
+const generatedAt = new Date("2026-09-20T12:34:00Z");
+
 test("orders open rows and excludes completed rows", () => {
-  const model = buildReportModel(rows, "2026-09-20");
+  const model = buildReportModel(rows, generatedAt);
   assert.deepEqual(model.rows.map((row) => row.status), ["متأخرة", "قيد الإجراء"]);
 });
 
+test("builds Saudi report metadata, summary, and working-day details", () => {
+  const model = buildReportModel(rows, generatedAt);
+  assert.deepEqual(model.generatedAt, {
+    dayName: "الأحد",
+    gregorianDate: "2026-09-20",
+    hijriDate: "1448-04-09",
+    time: "15:34",
+  });
+  assert.deepEqual(model.summary, { open: 2, progress: 1, wait: 0, follow: 0, late: 1 });
+  assert.equal(model.rows[0].waitingDays, 1);
+});
+
 test("renders PDF bytes", async () => {
-  const model = buildReportModel(rows, "2026-09-20");
+  const model = buildReportModel(rows, generatedAt);
   const localFontBytes = new Uint8Array(
     await readFile("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"),
   );
   const bytes = await renderArabicPdf(model, localFontBytes);
   assert.equal(new TextDecoder().decode(bytes.slice(0, 4)), "%PDF");
   assert.ok(bytes.length > 1000);
+  assert.match(new TextDecoder().decode(bytes), /841\.89 595\.28/);
 });
 
 test("renders Arabic PDF with the production font asset", async () => {
-  const model = buildReportModel(rows, "2026-09-20");
+  const model = buildReportModel(rows, generatedAt);
   const bytes = await renderArabicPdf(model);
   assert.equal(new TextDecoder().decode(bytes.slice(0, 4)), "%PDF");
   assert.ok(bytes.length > 1000);
