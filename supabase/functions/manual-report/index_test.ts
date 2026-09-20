@@ -26,6 +26,13 @@ test("renders PDF bytes", async () => {
   assert.ok(bytes.length > 1000);
 });
 
+test("renders Arabic PDF with the production font asset", async () => {
+  const model = buildReportModel(rows, "2026-09-20");
+  const bytes = await renderArabicPdf(model);
+  assert.equal(new TextDecoder().decode(bytes.slice(0, 4)), "%PDF");
+  assert.ok(bytes.length > 1000);
+});
+
 function fakeDeps(overrides: Partial<ManualReportDeps> = {}): ManualReportDeps {
   return {
     verifyUser: async () => ({ id: "admin-user" }),

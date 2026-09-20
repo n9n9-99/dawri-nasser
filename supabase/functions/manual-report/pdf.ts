@@ -2,7 +2,7 @@ import PDFDocument from "pdfkit";
 import type { ReportModel } from "./report.ts";
 
 const ARABIC_FONT_URL =
-  "https://cdn.jsdelivr.net/npm/@fontsource/noto-naskh-arabic@5.2.5/files/noto-naskh-arabic-arabic-400-normal.woff";
+  "https://cdn.jsdelivr.net/gh/google/fonts@35ddfc50b8c0dda6a1e0eb5d48d962c26a2ec5ff/ofl/notonaskharabic/NotoNaskhArabic%5Bwght%5D.ttf";
 
 let cachedFont: Promise<Uint8Array> | undefined;
 
