@@ -69,3 +69,39 @@ test('historical transaction references preserve their official format', () => {
   assert.equal(ui.isTransactionNumber('س//4800744070'), false);
   assert.equal(ui.isTransactionNumber(''), false);
 });
+
+test('admin report scope selects active, completed, or all transactions', () => {
+  assert.equal(typeof ui.selectReportRows, 'function');
+  const rows = [
+    { transaction_no: '3', entry_date: '2026-09-19', status: 'بانتظار رد' },
+    { transaction_no: '1', entry_date: '2026-09-20', status: 'منتهية' },
+    { transaction_no: '2', entry_date: '2026-09-20', status: 'قيد الإجراء' }
+  ];
+
+  assert.deepEqual(ui.selectReportRows(rows, 'active', true).map(row => row.transaction_no), ['2', '3']);
+  assert.deepEqual(ui.selectReportRows(rows, 'completed', true).map(row => row.transaction_no), ['1']);
+  assert.deepEqual(ui.selectReportRows(rows, 'all', true).map(row => row.transaction_no), ['1', '2', '3']);
+});
+
+test('non-admin cannot select rows for the comprehensive report', () => {
+  assert.equal(typeof ui.selectReportRows, 'function');
+  const rows = [{ transaction_no: '1', entry_date: '2026-09-20', status: 'منتهية' }];
+  assert.deepEqual(ui.selectReportRows(rows, 'all', false), []);
+});
+
+test('report summary is calculated from the selected rows only', () => {
+  assert.equal(typeof ui.summarizeReportRows, 'function');
+  const rows = [
+    { status: 'منتهية' },
+    { status: 'قيد الإجراء' },
+    { status: 'بانتظار رد' },
+    { status: 'متأخرة' }
+  ];
+  assert.deepEqual(ui.summarizeReportRows(rows), {
+    total: 4,
+    active: 3,
+    completed: 1,
+    waiting: 1,
+    late: 1
+  });
+});

@@ -21,7 +21,30 @@
     return /^(?:س\/)?[0-9]+(?:\/[0-9]+)*$/.test(normalized);
   }
 
-  return { isTransactionNumber, resetViewport, setModalOpen };
+  function selectReportRows(rows, scope, admin) {
+    if (!admin) return [];
+    const selected = rows.filter(row => {
+      if (scope === 'active') return row.status !== 'منتهية';
+      if (scope === 'completed') return row.status === 'منتهية';
+      return scope === 'all';
+    });
+    return selected.toSorted((a, b) =>
+      String(b.entry_date || '').localeCompare(String(a.entry_date || '')) ||
+      String(a.transaction_no || '').localeCompare(String(b.transaction_no || ''), 'ar', { numeric: true })
+    );
+  }
+
+  function summarizeReportRows(rows) {
+    return {
+      total: rows.length,
+      active: rows.filter(row => row.status !== 'منتهية').length,
+      completed: rows.filter(row => row.status === 'منتهية').length,
+      waiting: rows.filter(row => row.status === 'بانتظار رد').length,
+      late: rows.filter(row => row.status === 'متأخرة').length
+    };
+  }
+
+  return { isTransactionNumber, resetViewport, selectReportRows, setModalOpen, summarizeReportRows };
 });
 
 /*
