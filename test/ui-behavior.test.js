@@ -56,3 +56,16 @@ test('view changes reset scroll immediately without smooth animation', () => {
   ui.resetViewport({ scrollTo: options => { received = options; } });
   assert.deepEqual(received, { top: 0, left: 0, behavior: 'auto' });
 });
+
+test('historical transaction references preserve their official format', () => {
+  assert.equal(typeof ui.isTransactionNumber, 'function');
+
+  assert.equal(ui.isTransactionNumber('4800014642'), true);
+  assert.equal(ui.isTransactionNumber('4800152971/1'), true);
+  assert.equal(ui.isTransactionNumber('س/2/4800744070'), true);
+
+  assert.equal(ui.isTransactionNumber('٤٨٠٠٠١٤٦٤٢'), false);
+  assert.equal(ui.isTransactionNumber('A/4800014642'), false);
+  assert.equal(ui.isTransactionNumber('س//4800744070'), false);
+  assert.equal(ui.isTransactionNumber(''), false);
+});

@@ -16,7 +16,12 @@
     windowRef.scrollTo({ top: 0, left: 0, behavior: 'auto' });
   }
 
-  return { resetViewport, setModalOpen };
+  function isTransactionNumber(value) {
+    const normalized = String(value || '').trim();
+    return /^(?:س\/)?[0-9]+(?:\/[0-9]+)*$/.test(normalized);
+  }
+
+  return { isTransactionNumber, resetViewport, setModalOpen };
 });
 
 /*
