@@ -18,7 +18,31 @@
 
   function isTransactionNumber(value) {
     const normalized = String(value || '').trim();
-    return /^(?:س\/)?[0-9]+(?:\/[0-9]+)*$/.test(normalized);
+    return /^[A-Za-zء-ي0-9]+(?:[\/-][A-Za-zء-ي0-9]+)*$/.test(normalized);
+  }
+
+  function setTransactionFieldsEditable(documentRef) {
+    ['txNumber', 'txDate', 'txSubject', 'txEntity', 'txType'].forEach(id => {
+      const field = documentRef.getElementById(id);
+      if (field) field.disabled = false;
+    });
+  }
+
+  function buildTransactionWorkArgs(values) {
+    return {
+      p_id: values.id,
+      p_transaction_no: values.transactionNo,
+      p_entry_date: values.entryDate,
+      p_subject: values.subject,
+      p_entity: values.entity,
+      p_transaction_type: values.transactionType,
+      p_status: values.status,
+      p_required_action: values.requiredAction,
+      p_notes: values.notes,
+      p_sent_date: values.sentDate,
+      p_outgoing_letter_no: values.outgoingLetterNo,
+      p_sent_to: values.sentTo
+    };
   }
 
   function selectReportRows(rows, scope, admin) {
@@ -44,7 +68,7 @@
     };
   }
 
-  return { isTransactionNumber, resetViewport, selectReportRows, setModalOpen, summarizeReportRows };
+  return { buildTransactionWorkArgs, isTransactionNumber, resetViewport, selectReportRows, setModalOpen, setTransactionFieldsEditable, summarizeReportRows };
 });
 
 /*

@@ -63,11 +63,38 @@ test('historical transaction references preserve their official format', () => {
   assert.equal(ui.isTransactionNumber('4800014642'), true);
   assert.equal(ui.isTransactionNumber('4800152971/1'), true);
   assert.equal(ui.isTransactionNumber('س/2/4800744070'), true);
+  assert.equal(ui.isTransactionNumber('ص-4800744070/1'), true);
+  assert.equal(ui.isTransactionNumber('A/4800014642-B'), true);
 
   assert.equal(ui.isTransactionNumber('٤٨٠٠٠١٤٦٤٢'), false);
-  assert.equal(ui.isTransactionNumber('A/4800014642'), false);
   assert.equal(ui.isTransactionNumber('س//4800744070'), false);
+  assert.equal(ui.isTransactionNumber('س 4800744070'), false);
   assert.equal(ui.isTransactionNumber(''), false);
+});
+
+test('editing a transaction unlocks every business field', () => {
+  assert.equal(typeof ui.setTransactionFieldsEditable, 'function');
+  const ids = ['txNumber', 'txDate', 'txSubject', 'txEntity', 'txType'];
+  const fields = Object.fromEntries(ids.map(id => [id, { disabled: true }]));
+
+  ui.setTransactionFieldsEditable({ getElementById: id => fields[id] });
+
+  for (const id of ids) assert.equal(fields[id].disabled, false, `${id} remains locked`);
+});
+
+test('staff update payload includes every editable transaction field', () => {
+  assert.equal(typeof ui.buildTransactionWorkArgs, 'function');
+  assert.deepEqual(ui.buildTransactionWorkArgs({
+    id: 'tx-1', transactionNo: 'س/2/4800744070', entryDate: '2026-09-22',
+    subject: 'موضوع مصحح', entity: 'جهة مصححة', transactionType: 'صادرة',
+    status: 'قيد الإجراء', requiredAction: 'متابعة', notes: null,
+    sentDate: null, outgoingLetterNo: null, sentTo: null
+  }), {
+    p_id: 'tx-1', p_transaction_no: 'س/2/4800744070', p_entry_date: '2026-09-22',
+    p_subject: 'موضوع مصحح', p_entity: 'جهة مصححة', p_transaction_type: 'صادرة',
+    p_status: 'قيد الإجراء', p_required_action: 'متابعة', p_notes: null,
+    p_sent_date: null, p_outgoing_letter_no: null, p_sent_to: null
+  });
 });
 
 test('admin report scope selects active, completed, or all transactions', () => {
