@@ -46,13 +46,16 @@ setTimeout(()=>{repairNav();showR8();tick()},900);setInterval(tick,1000);
   const previousLoad=window.loadCurrentRound,previousSave=window.savePredictions;
   let loading=false,lastLocked=null;
   const active=()=>localStorage.getItem('dawri_competition')===GULF;
-  const semifinal=()=>active()&&currentRound?.round_number===4;
-  const locked=()=>!currentRound?.predictions_close_at||Date.now()>=+new Date(currentRound.predictions_close_at)||Date.now()<+new Date(currentRound.first_match_at)-48*3600000;
+  const semifinal=()=>active()&&[4,5].includes(currentRound?.round_number);
+  const locked=()=>!currentRound?.predictions_close_at||Date.now()>=+new Date(currentRound.predictions_close_at);
   function schedule(){
     if(!semifinal())return;
     document.querySelectorAll('#fixturesList>.card').forEach((card,i)=>{
       const f=fixtures.find(f=>f.id===card.dataset.fixtureId)||fixtures[i];
       if(!f)return;
+      let bonus=card.querySelector('.gulf-exact-bonus');
+      if(!bonus){bonus=document.createElement('div');bonus.className='bonus gulf-exact-bonus';card.querySelector('.match')?.insertAdjacentElement('afterend',bonus)}
+      bonus.textContent='⭐ بونص النتيجة الدقيقة — نقطتان إضافيتان + نقطة للتوقع الصحيح';
       let date=card.querySelector('.gulf-kickoff');
       if(!date){date=document.createElement('div');date.className='gulf-kickoff mini';card.querySelector('.match')?.insertAdjacentElement('afterend',date)}
       date.textContent=new Date(f.kickoff_at).toLocaleString('ar-SA-u-ca-gregory-nu-latn',{timeZone:'Asia/Riyadh',weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+' — بتوقيت السعودية';
@@ -75,15 +78,16 @@ setTimeout(()=>{repairNav();showR8();tick()},900);setInterval(tick,1000);
       if(se||!season)throw se||new Error('البطولة غير متاحة');
       const {data:rs,error:re}=await db.from('rounds').select('*').eq('season_id',season.id).order('round_number');
       if(re)throw re;
-      const round=(rs||[]).find(r=>r.round_number===4);
+      const semi=(rs||[]).find(r=>r.round_number===4),final=(rs||[]).find(r=>r.round_number===5);
+      const round=semi?.status==='finished'&&final?.first_match_at?final:semi;
       if(!round)throw new Error('نصف النهائي غير متاح');
       const {data:fx,error:fe}=await db.from('fixtures').select('*').eq('season_id',season.id).eq('round_id',round.id).order('kickoff_at');
       if(fe)throw fe;
       if(!active())return;
       currentRound=round;fixtures=fx||[];
-      el('roundTitle').textContent='خليجي 27 — نصف النهائي';
+      el('roundTitle').textContent='خليجي 27 — '+(round.round_number===5?'النهائي':'نصف النهائي');
       el('fixtureCount').textContent=fixtures.length;
-      el('bonusCount').textContent=fixtures.filter(f=>f.is_bonus).length;
+      el('bonusCount').textContent=fixtures.length;
       const {data:pr,error:pe}=me&&fixtures.length?await db.from('predictions').select('*').eq('user_id',me.id).in('fixture_id',fixtures.map(f=>f.id)):{data:[]};
       if(pe)throw pe;
       if(!active())return;

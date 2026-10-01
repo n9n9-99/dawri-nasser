@@ -16,7 +16,7 @@ test('Gulf 27 opening time is derived as 48 hours before the selected round', ()
   const functionSource = controlScript.match(/function gulfOpenAt\(r\)\{[^}]+\}/)?.[0];
   assert.ok(functionSource, 'gulfOpenAt(round) must exist');
 
-  const gulfOpenAt = Function(`return (${functionSource.replace('function gulfOpenAt', 'function')})`)();
+  const gulfOpenAt = Function('comp','GULF',`return (${functionSource.replace('function gulfOpenAt', 'function')})`)('GULF-27-2026','GULF-27-2026');
   const firstMatchAt = '2026-10-02T18:00:00.000Z';
   const actual = gulfOpenAt({ first_match_at: firstMatchAt });
   const expected = new Date(firstMatchAt).getTime() - 48 * 60 * 60 * 1000;
@@ -47,3 +47,13 @@ test('community list shows every approved player and reveals details at lock', (
   assert.match(controlScript, /arr\.length<total\?'⚠️':''/);
   assert.match(controlScript, /if\(document\.getElementById\('community'\)\?\.classList\.contains\('active'\)\)loadCommunity\(\)/);
 });
+
+ test('knockout opens immediately while Roshn keeps its 48-hour rule', () => {
+  const source = controlScript.match(/function gulfOpenAt\(r\)\{[^}]+\}/)[0];
+  const make = comp => Function('comp','GULF',`return (${source})`)(comp,'GULF-27-2026');
+  for (const round_number of [4,5]) {
+    const round={round_number,first_match_at:'2026-10-03T15:55:00Z'};
+    assert.equal(make('GULF-27-2026')(round),0);
+    assert.equal(make('SPL-2026-2027')(round),Date.parse(round.first_match_at)-48*3600000);
+  }
+ });
