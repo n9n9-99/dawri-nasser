@@ -51,6 +51,10 @@ export function adaptFotMob(payload) {
         source: 'fotmob',
         externalId: String(match.id),
         competition: league.name || '',
+        ...(status.finished && status.reason?.short ? {
+          decidedBy: /pen/i.test(status.reason.short) ? 'penalties' : /aet|extra/i.test(status.reason.short) ? 'extra_time' : status.reason.short === 'FT' ? 'regulation' : null,
+          penaltyHome: score(match.home?.penaltyScore), penaltyAway: score(match.away?.penaltyScore),
+        } : {}),
         kickoffAt: status.utcTime || new Date(match.timeTS).toISOString(),
         homeName: match.home?.name || match.home?.longName || '',
         awayName: match.away?.name || match.away?.longName || '',

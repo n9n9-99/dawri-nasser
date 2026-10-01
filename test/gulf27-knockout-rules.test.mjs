@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {scoreKnockout,validateKnockout,providerKnockoutResult} from '../gulf-knockout-rules.mjs';
+const result={winner:'home',finish_method:'penalties',home_score:1,away_score:1};
+test('penalty winner and pre-shootout score plus method give five points',()=>assert.equal(scoreKnockout({outcome:'home',predicted_home_score:1,predicted_away_score:1,finish_method:'penalties'},result).total,5));
+test('method bonus is independent of winner and score',()=>assert.equal(scoreKnockout({outcome:'away',predicted_home_score:2,predicted_away_score:3,finish_method:'penalties'},result).total,2));
+test('exact score bonus independently rewards the playing score',()=>assert.equal(scoreKnockout({outcome:'away',predicted_home_score:1,predicted_away_score:1,finish_method:'extra_time'},result).total,2));
+test('unconfirmed result never awards guessed winner or method',()=>assert.equal(scoreKnockout({outcome:'home',finish_method:'regulation'},null).total,0));
+test('drawn score with a penalty winner is accepted',()=>assert.equal(validateKnockout({outcome:'away',predicted_home_score:2,predicted_away_score:2,finish_method:'penalties'}),''));
+test('draw winner or non-drawn penalty score is rejected',()=>{assert.ok(validateKnockout({outcome:'draw',finish_method:'penalties'}));assert.ok(validateKnockout({outcome:'home',finish_method:'penalties',predicted_home_score:2,predicted_away_score:1}));});
+test('extra-time score must agree with winner and method is required',()=>{assert.ok(validateKnockout({outcome:'home',finish_method:'extra_time',predicted_home_score:1,predicted_away_score:2}));assert.ok(validateKnockout({outcome:'home'}));});
+test('explicit extra-time finish is scored from playing goals',()=>assert.deepEqual(providerKnockoutResult({state:'finished',decidedBy:'extra_time',homeScore:3,awayScore:2}),{winner:'home',finish_method:'extra_time',home_score:3,away_score:2}));
+test('penalty result needs separate shootout goals; unknown provider is pending',()=>{assert.equal(providerKnockoutResult({state:'finished',homeScore:4,awayScore:3}),null);assert.deepEqual(providerKnockoutResult({state:'finished',decidedBy:'penalties',homeScore:1,awayScore:1,penaltyHome:4,penaltyAway:3}),result);});

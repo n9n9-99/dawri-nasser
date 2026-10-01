@@ -2,6 +2,8 @@ import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 import { adapt365Scores, adaptFotMob, findProviderMatch, providerEventToPatch } from "./core.mjs";
 
+import { providerKnockoutResult } from "./gulf-knockout-rules.mjs";
+
 const SEASON_CODE = "GULF-27-2026";
 const DAY = 86_400_000;
 
@@ -94,6 +96,9 @@ Deno.serve(async () => {
       }
     }
 
+    const { data: knockoutRounds, error: knockoutError } = await supabase.from("rounds").select("id").eq("season_id", season.id).in("round_number", [4,5]);
+    if (knockoutError) throw knockoutError;
+    const knockoutIds = new Set((knockoutRounds || []).map((r:any) => r.id));
     let matched = 0;
     let changed = 0;
     const unmatched: string[] = [];
@@ -116,6 +121,17 @@ Deno.serve(async () => {
         .eq("season_id", season.id);
       if (error) throw error;
       if (different) changed++;
+      if (knockoutIds.has(fixture.round_id)) {
+        const result = providerKnockoutResult(event);
+        if (result) {
+          const existing = await supabase.from("gulf_knockout_results").select("source").eq("fixture_id", fixture.id).maybeSingle();
+          if (existing.error) throw existing.error;
+          if (existing.data?.source !== "admin") {
+            const saved = await supabase.from("gulf_knockout_results").upsert({fixture_id:fixture.id,...result,source:event.source},{onConflict:"fixture_id"});
+            if (saved.error) throw saved.error;
+          }
+        }
+      }
     }
 
     const roundIds = [...new Set(fixtures.map((f: any) => f.round_id))];
