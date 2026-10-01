@@ -24,7 +24,7 @@ window.savePredictions=async function(){
  rows.forEach(p=>myPredictions.set(p.fixture_id,p));notify('تم حفظ الفائز والنتيجة وطريقة الحسم');
 };
 async function readResults(ids){if(!ids.length)return new Map();const {data,error}=await db.from('gulf_knockout_results').select('*').in('fixture_id',ids);if(error)throw error;return new Map((data||[]).map(r=>[r.fixture_id,r]))}
-function groupScore(p,f){if(f.status!=='finished')return 0;const o=f.home_score>f.away_score?'home':f.home_score<f.away_score?'away':'draw';return p.outcome===o?1+(p.predicted_home_score===f.home_score&&p.predicted_away_score===f.away_score?2:0):0}
+function groupScore(p,f){let h,a;const state=f.status==='scheduled'&&Date.parse(f.kickoff_at)<=Date.now()?'live':f.status;if(state==='finished'&&f.home_score!=null&&f.away_score!=null){h=Number(f.home_score);a=Number(f.away_score)}else if(['live','halftime'].includes(state)&&f.live_home_score!=null&&f.live_away_score!=null){h=Number(f.live_home_score);a=Number(f.live_away_score)}else return 0;const o=h>a?'home':h<a?'away':'draw';return p.outcome===o?1+(p.predicted_home_score!=null&&p.predicted_away_score!=null&&Number(p.predicted_home_score)===h&&Number(p.predicted_away_score)===a?2:0):0}
 window.loadRanking=async function(){
  if(!active())return oldRanking.apply(this,arguments);
  try{
