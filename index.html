@@ -40,4 +40,64 @@ setTimeout(()=>{repairNav();showR8();tick()},900);setInterval(tick,1000);
 <script id="r8-final-view">
 (()=>{const RSL='SPL-2026-2027';function fmt(ms){let s=Math.max(0,Math.floor(ms/1000)),d=Math.floor(s/86400);s%=86400;let h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60),x=s%60,z=n=>String(n).padStart(2,'0');return(d?d+' يوم ':'')+z(h)+':'+z(m)+':'+z(x)}function master(){if(localStorage.getItem('dawri_competition')==='GULF-27-2026'||!window.currentRound||currentRound.round_number!==8)return;const list=document.getElementById('fixturesList'),hero=document.querySelector('#home .hero'),title=document.querySelector('#home .title'),pause=document.getElementById('leaguePauseView');if(pause)pause.style.display='none';[hero,title,list].forEach(n=>n?.classList.remove('hidden'));if(!list||!fixtures?.length)return;let box=document.getElementById('r8Master');if(!box){box=document.createElement('div');box.id='r8Master';box.className='r8-master';list.parentNode.insertBefore(box,list)}const first=Math.min(...fixtures.map(f=>new Date(f.kickoff_at).getTime()));const open=first-48*3600000;box.innerHTML='<h3>⚽ الجولة الثامنة</h3><div>بداية أول مباراة بعد</div><div class="big">'+fmt(first-Date.now())+'</div><div class="open">🔒 ستفتح التوقعات قبل بداية الجولة بـ <b>48 ساعة</b><br>'+new Date(open).toLocaleString('ar-SA',{timeZone:'Asia/Riyadh',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+'</div>';document.querySelectorAll('#fixturesList>.card').forEach(c=>{const f=fixtures.find(x=>x.id===c.dataset.fixtureId),o=c.querySelector('.fixture-countdown');if(f&&o&&f.status!=='finished')o.textContent=fmt(new Date(f.kickoff_at)-Date.now())})}setInterval(master,1000);setTimeout(master,1200)})();
 </script>
-<style id="prediction-lock-modal-css">#predictionLockModal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;background:#000b;backdrop-filter:blur(8px)}#predictionLockModal.show{display:flex}.prediction-lock-box{width:min(390px,100%);padding:30px 22px;border:2px solid #d0b15d;border-radius:26px;background:linear-gradient(160deg,#173324,#0b1711);box-shadow:0 24px 70px #000;text-align:center;direction:rtl}.prediction-lock-icon{font-size:52px}.prediction-lock-box h2{margin:10px 0 12px;color:#f5dfa0;font-size:27px}.prediction-lock-box p{margin:0;color:#fff;font-size:20px;font-weight:800;line-height:1.8}.prediction-lock-box small{display:block;margin-top:10px;color:#b9c9bf;font-size:15px}.prediction-lock-box button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:15px;background:#83aa9e;color:#07110e;font-size:18px;font-weight:900}</style><div id="predictionLockModal"><div class="prediction-lock-box"><div class="prediction-lock-icon">🔒</div><h2>التوقعات مغلقة حاليًا</h2><p>ستفتح التوقعات قبل بداية الجولة بـ 48 ساعة</p><small>يمكنك مشاهدة مباريات الجولة والعدادات الآن، وسيتم فتح التوقعات تلقائيًا في الموعد المحدد.</small><button type="button" onclick="closePredictionLock()">حسنًا</button></div></div><script>function showPredictionLock(){document.getElementById("predictionLockModal")?.classList.add("show")}function closePredictionLock(){document.getElementById("predictionLockModal")?.classList.remove("show")}</script></body></html>
+<style id="prediction-lock-modal-css">#predictionLockModal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;background:#000b;backdrop-filter:blur(8px)}#predictionLockModal.show{display:flex}.prediction-lock-box{width:min(390px,100%);padding:30px 22px;border:2px solid #d0b15d;border-radius:26px;background:linear-gradient(160deg,#173324,#0b1711);box-shadow:0 24px 70px #000;text-align:center;direction:rtl}.prediction-lock-icon{font-size:52px}.prediction-lock-box h2{margin:10px 0 12px;color:#f5dfa0;font-size:27px}.prediction-lock-box p{margin:0;color:#fff;font-size:20px;font-weight:800;line-height:1.8}.prediction-lock-box small{display:block;margin-top:10px;color:#b9c9bf;font-size:15px}.prediction-lock-box button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:15px;background:#83aa9e;color:#07110e;font-size:18px;font-weight:900}</style><div id="predictionLockModal"><div class="prediction-lock-box"><div class="prediction-lock-icon">🔒</div><h2>التوقعات مغلقة حاليًا</h2><p>ستفتح التوقعات قبل بداية الجولة بـ 48 ساعة</p><small>يمكنك مشاهدة مباريات الجولة والعدادات الآن، وسيتم فتح التوقعات تلقائيًا في الموعد المحدد.</small><button type="button" onclick="closePredictionLock()">حسنًا</button></div></div><script>function showPredictionLock(){document.getElementById("predictionLockModal")?.classList.add("show")}function closePredictionLock(){document.getElementById("predictionLockModal")?.classList.remove("show")}</script><script id="gulf27-semifinal-view">
+(()=>{
+  const GULF='GULF-27-2026';
+  const previousLoad=window.loadCurrentRound,previousSave=window.savePredictions;
+  let loading=false,lastLocked=null;
+  const active=()=>localStorage.getItem('dawri_competition')===GULF;
+  const semifinal=()=>active()&&currentRound?.round_number===4;
+  const locked=()=>!currentRound?.predictions_close_at||Date.now()>=+new Date(currentRound.predictions_close_at)||Date.now()<+new Date(currentRound.first_match_at)-48*3600000;
+  function schedule(){
+    if(!semifinal())return;
+    document.querySelectorAll('#fixturesList>.card').forEach((card,i)=>{
+      const f=fixtures.find(f=>f.id===card.dataset.fixtureId)||fixtures[i];
+      if(!f)return;
+      let date=card.querySelector('.gulf-kickoff');
+      if(!date){date=document.createElement('div');date.className='gulf-kickoff mini';card.querySelector('.match')?.insertAdjacentElement('afterend',date)}
+      date.textContent=new Date(f.kickoff_at).toLocaleString('ar-SA-u-ca-gregory-nu-latn',{timeZone:'Asia/Riyadh',weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+' — بتوقيت السعودية';
+    });
+  }
+  function tick(){
+    if(!semifinal())return;
+    const L=locked();
+    if(lastLocked!==L){lastLocked=L;renderFixtures(L);setTimeout(schedule,50)}
+    el('predictionState').textContent=L?'مغلقة':'قابلة للتعديل';
+    document.querySelectorAll('#fixturesList button,#fixturesList input,#fixturesList select').forEach(n=>n.disabled=L);
+    if(Date.now()>=+new Date(currentRound.predictions_close_at))el('lockText').textContent='🔒 أُغلقت التوقعات قبل أول مباراة بساعة';
+  }
+  window.loadCurrentRound=async function(){
+    if(!active())return previousLoad.apply(this,arguments);
+    if(loading)return;
+    loading=true;
+    try{
+      const {data:season,error:se}=await db.from('seasons').select('id').eq('season_code',GULF).maybeSingle();
+      if(se||!season)throw se||new Error('البطولة غير متاحة');
+      const {data:rs,error:re}=await db.from('rounds').select('*').eq('season_id',season.id).order('round_number');
+      if(re)throw re;
+      const round=(rs||[]).find(r=>r.round_number===4);
+      if(!round)throw new Error('نصف النهائي غير متاح');
+      const {data:fx,error:fe}=await db.from('fixtures').select('*').eq('season_id',season.id).eq('round_id',round.id).order('kickoff_at');
+      if(fe)throw fe;
+      if(!active())return;
+      currentRound=round;fixtures=fx||[];
+      el('roundTitle').textContent='خليجي 27 — نصف النهائي';
+      el('fixtureCount').textContent=fixtures.length;
+      el('bonusCount').textContent=fixtures.filter(f=>f.is_bonus).length;
+      const {data:pr,error:pe}=me&&fixtures.length?await db.from('predictions').select('*').eq('user_id',me.id).in('fixture_id',fixtures.map(f=>f.id)):{data:[]};
+      if(pe)throw pe;
+      if(!active())return;
+      myPredictions=new Map((pr||[]).map(p=>[p.fixture_id,p]));
+      lastLocked=locked();renderFixtures(lastLocked);tick();setTimeout(schedule,60);
+    }catch(error){
+      if(active()){fixtures=[];currentRound=null;el('fixtureCount').textContent='0';el('fixturesList').innerHTML='<div class="card empty">تعذر تحميل نصف النهائي. أعد المحاولة.</div>';notify('تعذر تحميل مباريات نصف النهائي')}
+      console.error('Gulf semifinal view',error);
+    }finally{loading=false}
+  };
+  window.savePredictions=async function(){
+    if(active()&&(!semifinal()||locked())){tick();return notify('التوقعات مغلقة حاليًا')}
+    return previousSave.apply(this,arguments);
+  };
+  setInterval(tick,1000);
+})();
+</script></body></html>

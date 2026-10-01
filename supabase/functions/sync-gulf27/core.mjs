@@ -102,7 +102,11 @@ export function providerEventToPatch(event, updatedAt = new Date().toISOString()
   const finished = event.state === 'finished';
   return {
     external_fixture_id: `${event.source}:${event.externalId}`,
-    kickoff_at: event.kickoffAt,
+    // Approved semifinal schedule: Saudi Arabia–Qatar, 3 Oct at 18:55 Riyadh.
+    // FotMob still reports 18:00; scope the correction to this exact event.
+    kickoff_at: event.source === 'fotmob' && String(event.externalId) === '6052094'
+      && String(event.kickoffAt).startsWith('2026-10-03')
+      ? '2026-10-03T15:55:00.000Z' : event.kickoffAt,
     status: event.state,
     live_home_score: live || finished ? event.homeScore : null,
     live_away_score: live || finished ? event.awayScore : null,

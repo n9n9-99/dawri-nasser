@@ -1,0 +1,17 @@
+import {readFileSync} from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
+const patch=html.match(/<script id="gulf27-semifinal-view">([\s\S]*?)<\/script>/)?.[1];
+const old=readFileSync(new URL('../supabase/functions/dawri-control/control.js',import.meta.url),'utf8').split('\n').find(l=>l.startsWith('loadCurrentRound=async'));
+const rounds=[{id:'group3',round_number:3,status:'finished',first_match_at:'2026-09-29T17:30:00Z'},{id:'semi',round_number:4,status:'upcoming',first_match_at:'2026-10-03T15:55:00Z',predictions_close_at:'2026-10-03T14:55:00Z'}];
+const fx=[{id:'sa-qa',round_id:'semi',kickoff_at:'2026-10-03T15:55:00Z',is_bonus:false},{id:'ae-om',round_id:'semi',kickoff_at:'2026-10-03T18:30:00Z',is_bonus:false}];
+let clock=Date.parse('2026-10-01T08:30:00Z'),timer,delegated=0,writes=0;
+const nodes=new Map();const el=id=>{if(!nodes.has(id))nodes.set(id,{textContent:'',innerHTML:'',querySelectorAll:()=>[],querySelector:()=>null});return nodes.get(id)};
+const context={console,Date:class extends Date {static now(){return clock}},localStorage:{getItem:()=>context.comp},document:{getElementById:el,querySelectorAll:()=>[]},GULF:'GULF-27-2026',comp:'GULF-27-2026',busy:false,season:{id:'gulf'},getSeason:async()=>{},currentRound:null,fixtures:[],me:{id:'user'},myPredictions:new Map(),el,esc:String,isLocked:r=>clock<Date.parse(r.first_match_at)-48*3600000||clock>=Date.parse(r.predictions_close_at),renderFixtures:()=>{},notify:()=>{},setTimeout:()=>{},setInterval:f=>timer=f,loadTeams:async()=>{},loadCurrentRound:async()=>delegated++,savePredictions:async()=>writes++,db:{from(table){let eqs=[];const q={select:()=>q,eq:(k,v)=>(eqs.push([k,v]),q),in:()=>q,order:()=>q,maybeSingle:()=>q,then(resolve){let data=table==='seasons'?{id:'gulf'}:table==='rounds'?rounds:table==='fixtures'?fx.filter(f=>eqs.every(([k,v])=>k!=='round_id'||f[k]===v)):[];return Promise.resolve({data}).then(resolve)}};return q}}};context.window=context;vm.createContext(context);vm.runInContext(patch||old,context);await context.loadCurrentRound();
+assert.equal(context.currentRound?.id,'semi','current view must select semifinal, never finished group3');
+assert.equal(context.fixtures.length,2);
+clock=Date.parse('2026-10-03T14:54:59Z');timer();assert.equal(el('predictionState').textContent,'قابلة للتعديل');
+clock=Date.parse('2026-10-03T14:55:00Z');timer();assert.equal(el('predictionState').textContent,'مغلقة');await context.savePredictions();assert.equal(writes,0);
+context.comp='SPL-2026-2027';await context.loadCurrentRound();assert.equal(delegated,1,'Roshn must delegate unchanged');
+console.log('PASS: semifinal only; 2 fixtures; lock boundary; no closed write; Roshn unchanged');
