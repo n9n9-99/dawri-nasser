@@ -11,7 +11,7 @@ export function validateKnockout(p){
 export function scoreKnockout(p,r){
  const outcome_points=r&&p.outcome===r.winner?1:0;
  const exact_score_points=r&&p.predicted_home_score!=null&&p.predicted_away_score!=null&&p.predicted_home_score===r.home_score&&p.predicted_away_score===r.away_score?2:0;
- const bonus_points=r&&p.finish_method===r.finish_method?2:0;
+ const bonus_points=r&&p.finish_method===r.finish_method?1:0;
  return {outcome_points,exact_score_points,bonus_points,total:outcome_points+exact_score_points+bonus_points};
 }
 export function providerKnockoutResult(e){
