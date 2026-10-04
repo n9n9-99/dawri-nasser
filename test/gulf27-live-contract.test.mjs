@@ -8,7 +8,7 @@ const controlScript = await readFile(
 );
 
 test('published control bundle identifies the activated Gulf 27 release', () => {
-  assert.match(controlScript, /window\.DAWRI_REMOTE_VERSION='51\.0\.0'/);
+  assert.match(controlScript, /window\.DAWRI_REMOTE_VERSION='52\.0\.0'/);
   assert.match(controlScript, /window\.DAWRI_GULF27_ACTIVE=true/);
 });
 
@@ -44,7 +44,7 @@ test('exact scores must agree with the selected outcome', () => {
 test('community list shows every approved player and reveals details at lock', () => {
   assert.match(controlScript, /const revealed=!!currentRound\.predictions_revealed\|\|isLocked\(currentRound\)/);
   assert.match(controlScript, /Object\.fromEntries\(\(ps\|\|\[\]\)\.map\(p=>\[p\.id,\[\]\]\)\)/);
-  assert.match(controlScript, /arr\.length<total\?'⚠️':''/);
+  assert.match(controlScript, /count<total\?'⚠️':''/);
   assert.match(controlScript, /if\(document\.getElementById\('community'\)\?\.classList\.contains\('active'\)\)loadCommunity\(\)/);
 });
 
