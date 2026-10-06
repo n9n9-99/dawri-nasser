@@ -26,82 +26,14 @@ async function loadAdmin(){if(me.role!=='admin')return;await loadRanking();let {
 async function approveUser(id){let legacyId=el('link_'+id).value,linked=legacyPlayers.find(x=>x.id===legacyId),patch={approval_status:'approved',approved_at:new Date().toISOString(),approved_by:me.id,linked_legacy_player_id:legacyId||null,baseline_points:linked?.points||0};if(linked)patch.display_name=linked.player_name;let {error}=await db.from('profiles').update(patch).eq('id',id);if(error)return notify('تعذر القبول: '+error.message);notify(linked?'تم القبول والربط بـ '+linked.player_name:'تم القبول كلاعب جديد');loadAdmin()}async function relinkUser(id,legacyId){let linked=legacyPlayers.find(x=>x.id===legacyId),patch={linked_legacy_player_id:legacyId||null,baseline_points:linked?.points||0};if(linked)patch.display_name=linked.player_name;let {error}=await db.from('profiles').update(patch).eq('id',id);notify(error?'تعذر تغيير الربط':'تم تحديث ربط اللاعب');if(!error)loadAdmin()}async function rejectUser(id){let {error}=await db.from('profiles').update({approval_status:'rejected',approved_at:new Date().toISOString(),approved_by:me.id}).eq('id',id);notify(error?'تعذر الرفض':'تم رفض المستخدم');if(!error)loadAdmin()}async function deleteUser(id,name){if(!confirm('حذف المستخدم '+decodeURIComponent(name)+' نهائيًا؟ سيتم حذف توقعاته وحسابه ولا يمكن التراجع.'))return;let {error}=await db.rpc('admin_delete_user',{target_user_id:id});if(error)return notify('تعذر الحذف: '+error.message);notify('تم حذف المستخدم نهائيًا');loadAdmin();loadRanking()}
 async function setRoundReveal(v){if(!currentRound)return;let {error}=await db.from('rounds').update({predictions_revealed:v}).eq('id',currentRound.id);if(!error){currentRound.predictions_revealed=v;notify(v?'تم كشف التوقعات':'تم إخفاء التوقعات')}}async function calculateRoundScores(){let finished=fixtures.filter(f=>f.status==='finished'&&f.home_score!=null&&f.away_score!=null);if(!finished.length)return notify('لا توجد مباريات منتهية');let {data:pred}=await db.from('predictions').select('*').in('fixture_id',finished.map(f=>f.id)),rows=[];for(let p of pred||[]){let f=finished.find(x=>x.id===p.fixture_id),actual=f.home_score===f.away_score?'draw':f.home_score>f.away_score?'home':'away',ok=p.outcome===actual,bonus=0;if(ok&&f.is_bonus){if(actual==='draw')bonus=2;else bonus=(actual==='home'?f.home_team_id:f.away_team_id)===f.bonus_favored_team_id?1:4}rows.push({prediction_id:p.id,outcome_points:ok?1:0,exact_score_points:p.predicted_home_score===f.home_score&&p.predicted_away_score===f.away_score?2:0,bonus_points:bonus})}let {error}=await db.from('prediction_scores').upsert(rows,{onConflict:'prediction_id'});notify(error?'تعذر الاحتساب':'تم احتساب النقاط')}
 (async()=>{let {data}=await db.auth.getSession();if(data.session)await boot(data.session);else showOnly('authScreen');db.auth.onAuthStateChange((_e,s)=>{session=s;if(!s){me=null;el('adminTab').classList.add('hidden');showOnly('authScreen')}})})();
-</script><script src="https://onaxpqnmmjnzfgzvfnzl.supabase.co/functions/v1/dawri-control?v=54"></script><style id="ios-sports-v3">
+</script><script src="https://onaxpqnmmjnzfgzvfnzl.supabase.co/functions/v1/dawri-control?v=55"></script><style id="ios-sports-v3">
 :root{--bg:#10161b;--surface:#171f25;--surface2:#1c262d;--line:rgba(255,255,255,.075);--text:#f4f6f7;--muted:#96a2aa;--accent:#7aa99a;--accent2:#c8a96a}html{background:#0c1216}body{background:linear-gradient(180deg,#121b21 0%,#0e151a 55%,#0a1014 100%);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Segoe UI",Tahoma,Arial,sans-serif;-webkit-font-smoothing:antialiased}.app{max-width:430px;padding-bottom:104px}.top{padding-top:max(14px,env(safe-area-inset-top));background:rgba(15,22,27,.78);backdrop-filter:saturate(150%) blur(28px);-webkit-backdrop-filter:saturate(150%) blur(28px);border-bottom:1px solid var(--line)}.brand{justify-content:center}.brand h1{font-size:19px;letter-spacing:-.5px}.brand p{color:var(--muted)}.logo,.biglogo{background:linear-gradient(145deg,#d8bd82,#a8894e);color:#11191e;border-radius:14px;box-shadow:none}.hero{border-radius:26px;background:linear-gradient(150deg,#1c2b32,#131e24);border:1px solid var(--line);box-shadow:0 16px 40px rgba(0,0,0,.18)}.round{font-size:30px;letter-spacing:-1px}.pill{border-radius:16px;background:rgba(255,255,255,.035);border:1px solid var(--line)}.card,.loginbox,.table{border-radius:22px;background:rgba(24,33,39,.94);border:1px solid var(--line);box-shadow:0 10px 28px rgba(0,0,0,.12)}.card{margin-bottom:12px}.choice,.ghost{border-radius:14px;min-height:44px;background:#202b32;border:1px solid rgba(255,255,255,.08);color:#e8edef}.choice.active{background:#31443f;border-color:#719b8e}.primary{border-radius:14px;min-height:46px;background:#759d91;color:#08110e;box-shadow:none}.danger{border-radius:14px}.badge{border-radius:999px;background:#dbe2e5;color:#142027}.bonus{background:#3a3325;color:#e3c98d;border-radius:999px}.nav{width:min(430px,100%);grid-template-columns:repeat(4,1fr);padding:7px 10px calc(7px + env(safe-area-inset-bottom));background:rgba(15,22,27,.86);backdrop-filter:saturate(160%) blur(30px);-webkit-backdrop-filter:saturate(160%) blur(30px);border-top:1px solid var(--line)}.nav button{min-height:48px;border-radius:14px;font-size:11px;color:#849198;transition:.15s}.nav button.active{background:rgba(122,169,154,.12);color:#a8cabe}.table{overflow:hidden}.muted{color:var(--muted)!important}input,select{border-radius:14px!important;background:#111a20!important;border-color:#2a3841!important}.preview-chip{position:fixed;top:max(8px,env(safe-area-inset-top));left:10px;z-index:80;padding:5px 9px;border-radius:999px;background:rgba(122,169,154,.9);color:#0b1412;font-size:10px;font-weight:800;backdrop-filter:blur(14px)}@media(max-width:430px){.app{padding-left:12px;padding-right:12px}.top{margin-left:-12px;margin-right:-12px;padding-left:16px;padding-right:16px}.card{padding:16px}.hero{padding:19px}}
 </style><script id="r8-ui-final-fix">
 (()=>{
 const R8=8;
 function tick(){if(!window.currentRound||currentRound.round_number!==R8)return;document.querySelectorAll('#fixturesList>.card').forEach(c=>{const f=(window.fixtures||[]).find(x=>x.id===c.dataset.fixtureId);if(!f)return;let bar=c.querySelector('.fixture-flow');if(!bar)return;const st=typeof effectiveStatus==='function'?effectiveStatus(f):f.status;if(st==='finished'||st==='live'||st==='halftime')return;let sec=Math.max(0,Math.floor((new Date(f.kickoff_at).getTime()-Date.now())/1000));const d=Math.floor(sec/86400);sec%=86400;const h=String(Math.floor(sec/3600)).padStart(2,'0');sec%=3600;const m=String(Math.floor(sec/60)).padStart(2,'0');const x=String(sec%60).padStart(2,'0');const out=bar.querySelector('.fixture-countdown');if(out)out.textContent=(d?d+' يوم ':'')+h+':'+m+':'+x;});}
 function repairNav(){document.querySelectorAll('.nav button').forEach(b=>{if(b.dataset.navFixed)return;b.dataset.navFixed='1';b.addEventListener('click',()=>{const raw=b.getAttribute('onclick')||'';const m=raw.match(/showScreen\('([^']+)'/);if(m&&typeof showScreen==='function')showScreen(m[1],b);});});}
-function showR8(){if(localStorage.getItem('dawri_competition')==='GULF-27-2026')return;if(window.currentRound&&currentRound.round_number===R8)return;if(typeof switchDawriCompetition==='function')switchDawriCompetition('SPL-2026-2027');}
+function showR8(){if(window.currentRound&&currentRound.round_number===R8)return;if(typeof switchDawriCompetition==='function')switchDawriCompetition('SPL-2026-2027');}
 setTimeout(()=>{repairNav();showR8();tick()},900);setInterval(tick,1000);
 })();
-</script><style id="r8-final-view-css">.league-pause{display:none!important}#home .hero.hidden,#home .title.hidden,#fixturesList.hidden{display:block!important}.r8-master{margin:14px 0;padding:18px;border:1px solid #6d824c;border-radius:22px;background:linear-gradient(145deg,#183322,#0b1711);text-align:center}.r8-master h3{margin:0 0 6px;font-size:22px}.r8-master .big{font-size:28px;font-weight:950;color:#f4dda0;font-variant-numeric:tabular-nums;direction:ltr}.r8-master .open{margin-top:8px;color:#b9c9bf;font-size:12px}.r8-master .open b{color:#e5c96f}</style>
-<script id="r8-final-view">
-(()=>{const RSL='SPL-2026-2027';function fmt(ms){let s=Math.max(0,Math.floor(ms/1000)),d=Math.floor(s/86400);s%=86400;let h=Math.floor(s/3600);s%=3600;let m=Math.floor(s/60),x=s%60,z=n=>String(n).padStart(2,'0');return(d?d+' يوم ':'')+z(h)+':'+z(m)+':'+z(x)}function master(){if(localStorage.getItem('dawri_competition')==='GULF-27-2026'||!window.currentRound||currentRound.round_number!==8)return;const list=document.getElementById('fixturesList'),hero=document.querySelector('#home .hero'),title=document.querySelector('#home .title'),pause=document.getElementById('leaguePauseView');if(pause)pause.style.display='none';[hero,title,list].forEach(n=>n?.classList.remove('hidden'));if(!list||!fixtures?.length)return;let box=document.getElementById('r8Master');if(!box){box=document.createElement('div');box.id='r8Master';box.className='r8-master';list.parentNode.insertBefore(box,list)}const first=Math.min(...fixtures.map(f=>new Date(f.kickoff_at).getTime()));const open=first-48*3600000;box.innerHTML='<h3>⚽ الجولة الثامنة</h3><div>بداية أول مباراة بعد</div><div class="big">'+fmt(first-Date.now())+'</div><div class="open">🔒 ستفتح التوقعات قبل بداية الجولة بـ <b>48 ساعة</b><br>'+new Date(open).toLocaleString('ar-SA',{timeZone:'Asia/Riyadh',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+'</div>';document.querySelectorAll('#fixturesList>.card').forEach(c=>{const f=fixtures.find(x=>x.id===c.dataset.fixtureId),o=c.querySelector('.fixture-countdown');if(f&&o&&f.status!=='finished')o.textContent=fmt(new Date(f.kickoff_at)-Date.now())})}setInterval(master,1000);setTimeout(master,1200)})();
-</script>
-<style id="prediction-lock-modal-css">#predictionLockModal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;background:#000b;backdrop-filter:blur(8px)}#predictionLockModal.show{display:flex}.prediction-lock-box{width:min(390px,100%);padding:30px 22px;border:2px solid #d0b15d;border-radius:26px;background:linear-gradient(160deg,#173324,#0b1711);box-shadow:0 24px 70px #000;text-align:center;direction:rtl}.prediction-lock-icon{font-size:52px}.prediction-lock-box h2{margin:10px 0 12px;color:#f5dfa0;font-size:27px}.prediction-lock-box p{margin:0;color:#fff;font-size:20px;font-weight:800;line-height:1.8}.prediction-lock-box small{display:block;margin-top:10px;color:#b9c9bf;font-size:15px}.prediction-lock-box button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:15px;background:#83aa9e;color:#07110e;font-size:18px;font-weight:900}</style><div id="predictionLockModal"><div class="prediction-lock-box"><div class="prediction-lock-icon">🔒</div><h2>التوقعات مغلقة حاليًا</h2><p>ستفتح التوقعات قبل بداية الجولة بـ 48 ساعة</p><small>يمكنك مشاهدة مباريات الجولة والعدادات الآن، وسيتم فتح التوقعات تلقائيًا في الموعد المحدد.</small><button type="button" onclick="closePredictionLock()">حسنًا</button></div></div><script>function showPredictionLock(){document.getElementById("predictionLockModal")?.classList.add("show")}function closePredictionLock(){document.getElementById("predictionLockModal")?.classList.remove("show")}</script><script id="gulf27-semifinal-view">
-(()=>{
-  const GULF='GULF-27-2026';
-  const previousLoad=window.loadCurrentRound,previousSave=window.savePredictions;
-  let loading=false,lastLocked=null;
-  const active=()=>localStorage.getItem('dawri_competition')===GULF;
-  const semifinal=()=>active()&&[4,5].includes(currentRound?.round_number);
-  const locked=()=>!currentRound?.predictions_close_at||Date.now()>=+new Date(currentRound.predictions_close_at);
-  function schedule(){
-    if(!semifinal())return;
-    document.querySelectorAll('#fixturesList>.card').forEach((card,i)=>{
-      const f=fixtures.find(f=>f.id===card.dataset.fixtureId)||fixtures[i];
-      if(!f)return;
-      let bonus=card.querySelector('.gulf-exact-bonus');
-      if(!bonus){bonus=document.createElement('div');bonus.className='bonus gulf-exact-bonus';card.querySelector('.match')?.insertAdjacentElement('afterend',bonus)}
-      bonus.textContent=currentRound.round_number===5?'نقطة للفائز + نقطتان للنتيجة الدقيقة + نقطة للحسم • كل مكافأة مستقلة':'⭐ بونص النتيجة الدقيقة — نقطتان إضافيتان + نقطة للتوقع الصحيح';
-      let date=card.querySelector('.gulf-kickoff');
-      if(!date){date=document.createElement('div');date.className='gulf-kickoff mini';card.querySelector('.match')?.insertAdjacentElement('afterend',date)}
-      date.textContent=new Date(f.kickoff_at).toLocaleString('ar-SA-u-ca-gregory-nu-latn',{timeZone:'Asia/Riyadh',weekday:'long',day:'numeric',month:'long',hour:'numeric',minute:'2-digit'})+' — بتوقيت السعودية';
-    });
-  }
-  function tick(){
-    if(!semifinal())return;
-    const L=locked();
-    if(lastLocked!==L){lastLocked=L;renderFixtures(L);setTimeout(schedule,50)}
-    el('predictionState').textContent=L?'مغلقة':'قابلة للتعديل';
-    document.querySelectorAll('#fixturesList button,#fixturesList input,#fixturesList select').forEach(n=>n.disabled=L);
-    if(Date.now()>=+new Date(currentRound.predictions_close_at))el('lockText').textContent='🔒 أُغلقت التوقعات قبل أول مباراة بساعة';
-  }
-  window.loadCurrentRound=async function(){
-    if(!active())return previousLoad.apply(this,arguments);
-    if(loading)return;
-    loading=true;
-    try{
-      const {data:season,error:se}=await db.from('seasons').select('id').eq('season_code',GULF).maybeSingle();
-      if(se||!season)throw se||new Error('البطولة غير متاحة');
-      const {data:rs,error:re}=await db.from('rounds').select('*').eq('season_id',season.id).order('round_number');
-      if(re)throw re;
-      const semi=(rs||[]).find(r=>r.round_number===4),final=(rs||[]).find(r=>r.round_number===5);
-      const round=semi?.status==='finished'&&final?.first_match_at?final:semi;
-      if(!round)throw new Error('نصف النهائي غير متاح');
-      const {data:fx,error:fe}=await db.from('fixtures').select('*').eq('season_id',season.id).eq('round_id',round.id).order('kickoff_at');
-      if(fe)throw fe;
-      if(!active())return;
-      currentRound=round;fixtures=fx||[];
-      el('roundTitle').textContent='خليجي 27 — '+(round.round_number===5?'النهائي':'نصف النهائي');
-      el('fixtureCount').textContent=fixtures.length;
-      el('bonusCount').textContent=fixtures.length;
-      const {data:pr,error:pe}=me&&fixtures.length?await db.from('predictions').select('*').eq('user_id',me.id).in('fixture_id',fixtures.map(f=>f.id)):{data:[]};
-      if(pe)throw pe;
-      if(!active())return;
-      myPredictions=new Map((pr||[]).map(p=>[p.fixture_id,p]));
-      lastLocked=locked();renderFixtures(lastLocked);tick();setTimeout(schedule,60);
-    }catch(error){
-      if(active()){fixtures=[];currentRound=null;el('fixtureCount').textContent='0';el('fixturesList').innerHTML='<div class="card empty">تعذر تحميل نصف النهائي. أعد المحاولة.</div>';notify('تعذر تحميل مباريات نصف النهائي')}
-      console.error('Gulf semifinal view',error);
-    }finally{loading=false}
-  };
-  window.savePredictions=async function(){
-    if(active()&&(!semifinal()||locked())){tick();return notify('التوقعات مغلقة حاليًا')}
-    return previousSave.apply(this,arguments);
-  };
-  setInterval(tick,1000);
-})();
-</script><script type="module" src="/gulf-knockout-ui.mjs?v=54"></script><script type="module" src="/gulf-completion.mjs?v=54"></script></body></html>
+</script><style id="prediction-lock-modal-css">#predictionLockModal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px;background:#000b;backdrop-filter:blur(8px)}#predictionLockModal.show{display:flex}.prediction-lock-box{width:min(390px,100%);padding:30px 22px;border:2px solid #d0b15d;border-radius:26px;background:linear-gradient(160deg,#173324,#0b1711);box-shadow:0 24px 70px #000;text-align:center;direction:rtl}.prediction-lock-icon{font-size:52px}.prediction-lock-box h2{margin:10px 0 12px;color:#f5dfa0;font-size:27px}.prediction-lock-box p{margin:0;color:#fff;font-size:20px;font-weight:800;line-height:1.8}.prediction-lock-box small{display:block;margin-top:10px;color:#b9c9bf;font-size:15px}.prediction-lock-box button{width:100%;margin-top:22px;padding:14px;border:0;border-radius:15px;background:#83aa9e;color:#07110e;font-size:18px;font-weight:900}</style><div id="predictionLockModal"><div class="prediction-lock-box"><div class="prediction-lock-icon">🔒</div><h2>التوقعات مغلقة حاليًا</h2><p>ستفتح التوقعات قبل بداية الجولة بـ 48 ساعة</p><small>يمكنك مشاهدة مباريات الجولة والعدادات الآن، وسيتم فتح التوقعات تلقائيًا في الموعد المحدد.</small><button type="button" onclick="closePredictionLock()">حسنًا</button></div></div><script>function showPredictionLock(){document.getElementById("predictionLockModal")?.classList.add("show")}function closePredictionLock(){document.getElementById("predictionLockModal")?.classList.remove("show")}</script><script type="module" src="/roshn-dashboard.mjs?v=55"></script></body></html>
