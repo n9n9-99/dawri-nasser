@@ -8,7 +8,7 @@ const controlScript = await readFile(
 );
 
 test('published control bundle identifies the activated Gulf 27 release', () => {
-  assert.match(controlScript, /window\.DAWRI_REMOTE_VERSION='52\.0\.0'/);
+  assert.match(controlScript, /window\.DAWRI_REMOTE_VERSION='54\.0\.0'/);
   assert.match(controlScript, /window\.DAWRI_GULF27_ACTIVE=true/);
 });
 
