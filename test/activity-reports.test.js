@@ -7,3 +7,9 @@ const logs=[{user_id:'a',action:'insert',transaction_id:'1'}, {user_id:'a',actio
 const r=reports.summarize(people,logs);assert.equal(r.rows[0].username,'a');assert.equal(r.rows[0].inserted,1);assert.equal(r.rows[0].edits,1);assert.equal(r.rows[0].editedTransactions,1);assert.equal(r.rows[0].ignoredSaves,1);assert.equal(r.rows[0].total,2);assert.equal(r.unassigned,1);assert.equal(r.movements.length,3);
 });
 test('report escapes names and shows all tied leaders',()=>{const r=reports.summarize([{id:'a',username:'a',full_name:'<script>'},{id:'b',username:'b',full_name:'ب'}],[{user_id:'a',action:'insert'},{user_id:'b',action:'insert'}]);const h=reports.render(r,'2026-10-01','2026-10-31');assert.equal(r.leaders.length,2);assert.ok(h.includes('&lt;script&gt;'));assert.ok(!h.includes('<script>'));assert.ok(h.includes('من 2026-10-01 إلى 2026-10-31'));});
+test('summary keeps date range and user totals while omitting transaction details',()=>{
+ const model=reports.summarize([{id:'a',username:'a',full_name:'المستخدم'}],[{user_id:'a',action:'insert',new_data:{transaction_no:'PRIVATE-REF'}}]);
+ const summary=reports.render(model,'2026-10-01','2026-10-13','summary');
+ assert.ok(summary.includes('من 2026-10-01 إلى 2026-10-13'));assert.ok(summary.includes('المستخدم'));assert.ok(summary.includes('الإجمالي'));assert.ok(!summary.includes('تفاصيل حركات الإدخال والتعديل'));assert.ok(!summary.includes('PRIVATE-REF'));
+ assert.ok(reports.render(model,'2026-10-01','2026-10-13','full').includes('PRIVATE-REF'));
+});
