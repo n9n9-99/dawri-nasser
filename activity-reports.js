@@ -18,13 +18,14 @@ function summarize(people,logs){
  rows.forEach(p=>{p.editedTransactions=p.editedIds.size;delete p.editedIds;});rows.sort((a,b)=>b.total-a.total||b.inserted-a.inserted||a.username.localeCompare(b.username));
  const leaders=rows.filter(p=>p.total>0&&p.total===rows[0].total);return {rows,leaders,movements,unassigned,total:rows.reduce((n,p)=>n+p.total,0)};
 }
-function render(model,from,to){
+function render(model,from,to,mode='full'){
  let h='<div class="print-head"><h1>قسم الشؤون القانونية</h1><h2>تقرير نشاط المستخدمين</h2><p>من '+esc(from)+' إلى '+esc(to)+' (ميلادي) • توقيت المملكة العربية السعودية</p></div>';
  h+='<div class="activity-winner"><strong>'+(model.leaders.length?'الأكثر نشاطًا'+(model.leaders.length>1?' — تعادل':''):'لا يوجد نشاط مسجل خلال الفترة')+'</strong><p>'+model.leaders.map(p=>esc(p.full_name)+' ('+esc(p.username)+') — '+p.total+' حركة فعلية').join(' • ')+'</p></div>';
  h+='<table class="activity-table"><thead><tr><th>الترتيب</th><th>المستخدم</th><th>اسم الدخول</th><th>أدخل</th><th>معاملات معدلة</th><th>تعديلات فعلية</th><th>الإجمالي</th></tr></thead><tbody>';
  h+=model.rows.map((p,i)=>'<tr class="'+(model.leaders.includes(p)?'activity-leader':'')+'"><td>'+(i+1)+'</td><td>'+esc(p.full_name)+'</td><td>'+esc(p.username)+'</td><td>'+p.inserted+'</td><td>'+p.editedTransactions+'</td><td>'+p.edits+'</td><td><b>'+p.total+'</b></td></tr>').join('');
  h+='<tr><td colspan="3"><b>المجموع</b></td><td>'+model.rows.reduce((n,p)=>n+p.inserted,0)+'</td><td>—</td><td>'+model.rows.reduce((n,p)=>n+p.edits,0)+'</td><td><b>'+model.total+'</b></td></tr></tbody></table>';
  h+='<p class="print-note">الإجمالي = الإدخال + التعديلات الفعلية. «معاملات معدلة» يحسب المعاملة مرة واحدة لكل مستخدم، بينما «تعديلات فعلية» يحسب كل تغيير حقيقي. الحفظ دون تغيير مستبعد ('+model.rows.reduce((n,p)=>n+p.ignoredSaves,0)+' حركة). الحركات غير المنسوبة لمستخدم: '+model.unassigned+'؛ مستبعدة من ترتيب الهدية. القياس يعكس النشاط المسجل ولا يقيس جودة العمل. يشمل الجدول حساب الأدمن.</p>';
+ if(mode==='summary')return h;
  h+='<h3>تفاصيل حركات الإدخال والتعديل</h3><table class="activity-detail-table"><thead><tr><th>م</th><th>التاريخ والوقت</th><th>المستخدم</th><th>رقم المعاملة</th><th>الحركة</th><th>تفاصيل التغيير</th></tr></thead><tbody>';
  h+=model.movements.map((m,i)=>{const date=m.created_at?new Intl.DateTimeFormat('ar-SA-u-ca-gregory-nu-latn',{timeZone:'Asia/Riyadh',dateStyle:'short',timeStyle:'short'}).format(new Date(m.created_at)):'—';const detail=m.action==='insert'?'تسجيل معاملة جديدة':m.changed.map(k=>labels[k]+': '+String(m.old_data?.[k]??'—')+' ← '+String(m.new_data?.[k]??'—')).join('؛ ');return '<tr><td>'+(i+1)+'</td><td>'+esc(date)+'</td><td>'+esc(m.full_name)+'</td><td>'+esc(m.new_data?.transaction_no||m.old_data?.transaction_no||m.transaction_id||'—')+'</td><td>'+(m.action==='insert'?'إدخال':'تعديل')+'</td><td>'+esc(detail)+'</td></tr>';}).join('');
  return h+'</tbody></table>';
