@@ -155,7 +155,7 @@ async function saveTx(ev){
  const subject=$('txSubject').value.trim(),entity=$('txEntity').value.trim(),transactionType=$('txType').value;
  if(!LegalAffairsUI.isTransactionNumber(txNo)){toast('رقم المعاملة يقبل الأرقام الإنجليزية والحروف والشرطة - والشرطة المائلة / فقط');return}
  const entryG=hijriToGregorian(entryH);if(!entryG){toast('تاريخ القيد غير صحيح. استخدم هجري أم القرى مثل 1448/04/07');return}
- if(letter&&status!=='تحتاج إلحاقي'&&!isLatinNumber(letter)){toast('رقم الخطاب يجب أن يكون بالأرقام الإنجليزية فقط');return}
+ if(wait&&letter&&status!=='تحتاج إلحاقي'&&!isLatinNumber(letter)){toast('رقم الخطاب يجب أن يكون بالأرقام الإنجليزية فقط');return}
  if(wait&&(!sentH||!$('txSentTo').value.trim())){toast('أكمل تاريخ إرسال الخطاب والجهة المرسل إليها');return}
  const sentG=wait?hijriToGregorian(sentH):null;if(wait&&!sentG){toast('تاريخ إرسال الخطاب غير صحيح');return}
  const common={status,required_action:$('txAction').value.trim(),notes:$('txNotes').value.trim()||null,sent_date:sentG,outgoing_letter_no:wait?(letter||null):null,sent_to:wait?$('txSentTo').value.trim():null};
