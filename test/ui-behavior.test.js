@@ -82,6 +82,31 @@ test('editing a transaction unlocks every business field', () => {
   for (const id of ids) assert.equal(fields[id].disabled, false, `${id} remains locked`);
 });
 
+test('every Hijri input opens the picker by click or keyboard', () => {
+  assert.equal(typeof ui.bindHijriPickers, 'function');
+  const ids = ['txDate', 'txSentDate', 'adminPrintFrom', 'adminPrintTo'];
+  const handlers = new Map();
+  const inputs = ids.map(id => ({
+    id,
+    addEventListener(type, handler) {
+      handlers.set(`${id}:${type}`, handler);
+    }
+  }));
+  const opened = [];
+
+  ui.bindHijriPickers({ querySelectorAll: selector => {
+    assert.equal(selector, '.hijri-input');
+    return inputs;
+  } }, id => opened.push(id));
+
+  handlers.get('adminPrintFrom:click')();
+  let prevented = false;
+  handlers.get('adminPrintTo:keydown')({ key: 'Enter', preventDefault: () => { prevented = true; } });
+
+  assert.deepEqual(opened, ['adminPrintFrom', 'adminPrintTo']);
+  assert.equal(prevented, true);
+});
+
 test('staff update payload includes every editable transaction field', () => {
   assert.equal(typeof ui.buildTransactionWorkArgs, 'function');
   assert.deepEqual(ui.buildTransactionWorkArgs({

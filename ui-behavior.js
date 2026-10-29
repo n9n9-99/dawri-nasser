@@ -28,6 +28,18 @@
     });
   }
 
+  function bindHijriPickers(documentRef, openPicker) {
+    documentRef.querySelectorAll('.hijri-input').forEach(input => {
+      if (!input.id) return;
+      input.addEventListener('click', () => openPicker(input.id));
+      input.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        event.preventDefault();
+        openPicker(input.id);
+      });
+    });
+  }
+
   function buildTransactionWorkArgs(values) {
     return {
       p_id: values.id,
@@ -75,7 +87,7 @@
     };
   }
 
-  return { buildTransactionWorkArgs, isTransactionNumber, resetViewport, selectReportRows, setModalOpen, setTransactionFieldsEditable, summarizeReportRows };
+  return { bindHijriPickers, buildTransactionWorkArgs, isTransactionNumber, resetViewport, selectReportRows, setModalOpen, setTransactionFieldsEditable, summarizeReportRows };
 });
 
 /*
