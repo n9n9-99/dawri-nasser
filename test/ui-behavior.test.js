@@ -110,6 +110,37 @@ test('admin report scope selects active, completed, or all transactions', () => 
   assert.deepEqual(ui.selectReportRows(rows, 'all', true).map(row => row.transaction_no), ['1', '2', '3']);
 });
 
+test('admin report date range is inclusive and combines with status scope', () => {
+  const rows = [
+    { transaction_no: '1', entry_date: '2026-10-04', status: 'منتهية' },
+    { transaction_no: '2', entry_date: '2026-10-05', status: 'منتهية' },
+    { transaction_no: '3', entry_date: '2026-10-06', status: 'قيد الإجراء' },
+    { transaction_no: '4', entry_date: '2026-11-07', status: 'منتهية' },
+    { transaction_no: '5', entry_date: '2026-11-08', status: 'منتهية' }
+  ];
+
+  assert.deepEqual(
+    ui.selectReportRows(rows, 'all', true, '2026-10-05', '2026-11-07').map(row => row.transaction_no),
+    ['4', '3', '2']
+  );
+  assert.deepEqual(
+    ui.selectReportRows(rows, 'completed', true, '2026-10-05', '2026-11-07').map(row => row.transaction_no),
+    ['4', '2']
+  );
+});
+
+test('blank admin report date bounds preserve the current behavior', () => {
+  const rows = [
+    { transaction_no: '1', entry_date: '2026-10-05', status: 'منتهية' },
+    { transaction_no: '2', entry_date: '2026-11-08', status: 'قيد الإجراء' }
+  ];
+
+  assert.deepEqual(
+    ui.selectReportRows(rows, 'all', true, '', '').map(row => row.transaction_no),
+    ['2', '1']
+  );
+});
+
 test('non-admin cannot select rows for the comprehensive report', () => {
   assert.equal(typeof ui.selectReportRows, 'function');
   const rows = [{ transaction_no: '1', entry_date: '2026-09-20', status: 'منتهية' }];

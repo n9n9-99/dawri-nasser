@@ -83,3 +83,11 @@ test('index exposes the admin report sharing controls', async () => {
   assert.match(html, /functions\/v1\/manual-report/);
   assert.match(html, /LegalReportShare\.shareOrDownload/);
 });
+
+test('admin register print controls expose an Umm al-Qura date range', async () => {
+  const html = await readFile(path.join(__dirname, '..', 'index.html'), 'utf8');
+  assert.match(html, /id="adminPrintFrom"[^>]*class="[^"]*hijri-input/);
+  assert.match(html, /id="adminPrintTo"[^>]*class="[^"]*hijri-input/);
+  assert.match(html, /من تاريخ \(هجري\)/);
+  assert.match(html, /إلى تاريخ \(هجري\)/);
+});

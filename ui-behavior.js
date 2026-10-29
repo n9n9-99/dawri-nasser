@@ -45,12 +45,19 @@
     };
   }
 
-  function selectReportRows(rows, scope, admin) {
+  function selectReportRows(rows, scope, admin, fromDate, toDate) {
     if (!admin) return [];
     const selected = rows.filter(row => {
-      if (scope === 'active') return row.status !== 'منتهية';
-      if (scope === 'completed') return row.status === 'منتهية';
-      return scope === 'all';
+      const matchesScope = scope === 'active'
+        ? row.status !== 'منتهية'
+        : scope === 'completed'
+          ? row.status === 'منتهية'
+          : scope === 'all';
+      if (!matchesScope) return false;
+      const entryDate = String(row.entry_date || '');
+      if (fromDate && entryDate < fromDate) return false;
+      if (toDate && entryDate > toDate) return false;
+      return true;
     });
     return selected.toSorted((a, b) =>
       String(b.entry_date || '').localeCompare(String(a.entry_date || '')) ||
